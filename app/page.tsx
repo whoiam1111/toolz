@@ -20,8 +20,8 @@ const fadeInUp: Variants = {
 const staggerContainer: Variants = {
     initial: {},
     whileInView: {
-        transition: { staggerChildren: 0.2 }
-    }
+        transition: { staggerChildren: 0.2 },
+    },
 };
 
 interface FeatureItem {
@@ -31,9 +31,9 @@ interface FeatureItem {
 }
 
 const whyNrpItems: FeatureItem[] = [
-    { icon: Library, title: "고품질 콘텐츠", desc: "분야별 최고 전문가들이 설계한 체계적인 커리큘럼을 제공합니다." },
-    { icon: Users, title: "성장 커뮤니티", desc: "서로의 관점을 공유하며 함께 성장하는 동료들을 만날 수 있습니다." },
-    { icon: Target, title: "개인별 로드맵", desc: "데이터 진단을 통해 당신에게 꼭 필요한 성장 단계를 제시합니다." }
+    { icon: Library, title: '고품질 콘텐츠', desc: '분야별 최고 전문가들이 설계한 체계적인 커리큘럼을 제공합니다.' },
+    { icon: Users, title: '성장 커뮤니티', desc: '서로의 관점을 공유하며 함께 성장하는 동료들을 만날 수 있습니다.' },
+    { icon: Target, title: '개인별 로드맵', desc: '데이터 진단을 통해 당신에게 꼭 필요한 성장 단계를 제시합니다.' },
 ];
 
 export default function Home() {
@@ -86,9 +86,8 @@ export default function Home() {
 
     return (
         <div className="bg-[#0f0f0f] text-white selection:bg-orange-500 selection:text-white overflow-x-hidden antialiased font-sans">
-            
             {/* --- 팝업 섹션 --- */}
-            {isMindpointPopupVisible && (
+            {/* {isMindpointPopupVisible && (
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
                     <div className={`relative w-full max-sm:max-w-xs max-w-sm bg-[#1a1a1a] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isAnimatingMindpoint ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                         <div className="relative aspect-[4/5] w-full">
@@ -119,13 +118,13 @@ export default function Home() {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
 
             {/* --- Hero Section --- */}
             <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-orange-500/10 via-transparent to-transparent opacity-60" />
                 <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 1 }}
@@ -137,23 +136,38 @@ export default function Home() {
                             <span className="text-orange-500">한 줄기 빛</span>
                         </h1>
                         <p className="text-xl text-gray-400 font-normal leading-relaxed break-keep max-w-lg">
-                            단순한 교육을 넘어 당신의 삶을 바라보는 <br className="hidden md:block" /> 도구를 제공합니다. 지금 TOOL:Z와 시작하세요.
+                            단순한 교육을 넘어 당신의 삶을 바라보는 <br className="hidden md:block" /> 도구를
+                            제공합니다. 지금 TOOL:Z와 시작하세요.
                         </p>
                         <div className="flex flex-wrap gap-4">
-                            <Link href="/about" className="inline-flex items-center gap-2 px-10 py-5 bg-orange-600 hover:bg-orange-500 rounded-2xl font-bold transition-all shadow-xl shadow-orange-600/20 group text-lg">
-                                시작하기 <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
+                            <Link
+                                href="/about"
+                                className="inline-flex items-center gap-2 px-10 py-5 bg-orange-600 hover:bg-orange-500 rounded-2xl font-bold transition-all shadow-xl shadow-orange-600/20 group text-lg"
+                            >
+                                시작하기{' '}
+                                <ArrowRight
+                                    size={22}
+                                    className="group-hover:translate-x-1 transition-transform"
+                                />
                             </Link>
                         </div>
                     </motion.div>
 
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1 }}
                         className="relative group flex justify-center lg:justify-end"
                     >
                         <div className="relative w-full max-w-[480px] bg-[#1a1a1a] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl">
-                            <Image src="/orangeB.jpg" alt="Main Visual" width={500} height={700} className="w-full h-auto object-cover opacity-90" priority />
+                            <Image
+                                src="/orangeB.jpg"
+                                alt="Main Visual"
+                                width={500}
+                                height={700}
+                                className="w-full h-auto object-cover opacity-90"
+                                priority
+                            />
                         </div>
                     </motion.div>
                 </div>
@@ -161,12 +175,14 @@ export default function Home() {
 
             <Brandintro />
             <MainStatistics />
-            <div className="py-20"><MainClassSlider /></div>
+            <div className="py-20">
+                <MainClassSlider />
+            </div>
 
             {/* --- Why NRP Section --- */}
             <section className="py-32 bg-[#0a0a0a]">
                 <div className="max-w-7xl mx-auto px-6">
-                    <motion.div 
+                    <motion.div
                         variants={fadeInUp}
                         initial="initial"
                         whileInView="whileInView"
@@ -175,12 +191,14 @@ export default function Home() {
                     >
                         <div className="text-left">
                             <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-2">WHY TOOL:Z?</h2>
-                            <p className="text-gray-500 font-medium text-lg">성장을 위한 가장 완벽한 생태계를 제공합니다.</p>
+                            <p className="text-gray-500 font-medium text-lg">
+                                성장을 위한 가장 완벽한 생태계를 제공합니다.
+                            </p>
                         </div>
                         <div className="h-px flex-1 bg-white/10 mx-8 hidden md:block mb-6"></div>
                     </motion.div>
-                    
-                    <motion.div 
+
+                    <motion.div
                         variants={staggerContainer}
                         initial="initial"
                         whileInView="whileInView"
@@ -190,14 +208,17 @@ export default function Home() {
                         {whyNrpItems.map((item, idx) => {
                             const Icon = item.icon;
                             return (
-                                <motion.div 
-                                    key={idx} 
+                                <motion.div
+                                    key={idx}
                                     variants={fadeInUp}
                                     transition={{ duration: 0.6 }}
                                     className="p-10 bg-[#151515] border border-white/5 rounded-[2rem] group hover:border-orange-500/30 transition-all shadow-lg"
                                 >
                                     <div className="mb-8 p-4 bg-orange-500/10 inline-block rounded-2xl group-hover:bg-orange-500 transition-all">
-                                        <Icon size={32} className="text-orange-500 group-hover:text-white transition-colors" />
+                                        <Icon
+                                            size={32}
+                                            className="text-orange-500 group-hover:text-white transition-colors"
+                                        />
                                     </div>
                                     <h3 className="text-2xl font-bold mb-4 tracking-tight">{item.title}</h3>
                                     <p className="text-gray-400 font-normal leading-relaxed break-keep">{item.desc}</p>
@@ -209,19 +230,32 @@ export default function Home() {
             </section>
 
             {/* --- Final CTA Section --- */}
-            <motion.section 
+            <motion.section
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 className="relative py-40 overflow-hidden bg-orange-600 text-center"
             >
                 <div className="absolute inset-0 opacity-20">
-                    <Image src="/back.jpg" alt="Background" fill className="object-cover" sizes="100vw" />
+                    <Image
+                        src="/back.jpg"
+                        alt="Background"
+                        fill
+                        className="object-cover"
+                        sizes="100vw"
+                    />
                 </div>
                 <div className="relative z-10 max-w-4xl mx-auto px-6">
-                    <h2 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter text-white">망설일 이유가 없습니다.</h2>
-                    <p className="text-orange-50 text-xl mb-12 font-medium">지금 바로 시작하고 당신의 잠재력을 깨워보세요.</p>
-                    <Link href="/subscribe" className="inline-flex items-center gap-3 bg-black text-white px-12 py-6 rounded-2xl text-xl font-bold hover:bg-zinc-900 transition-all shadow-2xl">
+                    <h2 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter text-white">
+                        망설일 이유가 없습니다.
+                    </h2>
+                    <p className="text-orange-50 text-xl mb-12 font-medium">
+                        지금 바로 시작하고 당신의 잠재력을 깨워보세요.
+                    </p>
+                    <Link
+                        href="/subscribe"
+                        className="inline-flex items-center gap-3 bg-black text-white px-12 py-6 rounded-2xl text-xl font-bold hover:bg-zinc-900 transition-all shadow-2xl"
+                    >
                         내게 맞는 플랜 찾기 <ArrowRight />
                     </Link>
                 </div>
