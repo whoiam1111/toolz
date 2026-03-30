@@ -5,19 +5,19 @@ import Navigation from './Navigation';
 import Footer from './about/components/Footer';
 
 export const metadata = {
-    title: 'ReframePoint | 리프레임포인트',
-    description: 'Reframing through education | 교육을 통한 리프레임',
-    keywords: ['ReframePoint', '리프레임포인트', '교육', '심리', '자기성찰', '자기이해'],
+    title: 'TOOL:Z | 툴즈',
+    description: '질문과 자기이해를 위한 TOOL:Z | 툴즈',
+    keywords: ['TOOL:Z', '툴즈', '자기이해', '자기성찰', '심리', '질문', '문장완성'],
     openGraph: {
-        title: 'ReframePoint | 리프레임포인트',
-        description: '교육을 통한 리프레임, 리프레임포인트',
-        url: 'https://reframepoint.co.kr',
-        siteName: '리프레임포인트',
+        title: 'TOOL:Z | 툴즈',
+        description: '질문과 자기이해를 위한 TOOL:Z | 툴즈',
+        url: 'https://toolz.co.kr', // 실제 도메인으로 변경
+        siteName: 'TOOL:Z | 툴즈',
         locale: 'ko_KR',
         type: 'website',
     },
     alternates: {
-        canonical: 'https://reframepoint.co.kr', // 실제 도메인으로 변경하세요
+        canonical: 'https://toolz.co.kr', // 실제 도메인으로 변경
     },
 };
 

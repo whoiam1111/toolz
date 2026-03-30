@@ -1,7 +1,7 @@
 /** @type {import('next-sitemap').IConfig} */
 
 module.exports = {
-    siteUrl: 'https://www.reframepoint.co.kr/',
+    siteUrl: 'https://www.toolz.co.kr/',
     generateRobotsTxt: true,
     sitemapSize: 5000,
     changefreq: 'daily',
