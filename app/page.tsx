@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
 import { Library, Users, Target, ArrowRight, X, LucideIcon } from 'lucide-react';
 
+import { useRouter } from 'next/navigation';
 // 기존 컴포넌트 임포트
 import MainClassSlider from './MainClassSlider';
 import Brandintro from './Brandintro';
@@ -83,7 +84,7 @@ export default function Home() {
         localStorage.setItem('dontShowSurveyUntil', tomorrow.getTime().toString());
         closeSurveyPopup();
     };
-
+    const router = useRouter();
     return (
         <div className="bg-[#0f0f0f] text-white selection:bg-orange-500 selection:text-white overflow-x-hidden antialiased font-sans">
             {/* --- 팝업 섹션 --- */}
@@ -175,6 +176,78 @@ export default function Home() {
 
             <Brandintro />
             <MainStatistics />
+            <section className="py-24 bg-[#0f0f0f]">
+                <div className="max-w-6xl mx-auto px-6 text-center">
+                    <h2 className="text-4xl md:text-5xl font-black mb-6 text-white">당신을 먼저 알아보세요</h2>
+                    <p className="text-gray-400 mb-16 text-lg">단 1분, 당신의 상태를 빠르게 진단해드립니다</p>
+
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {/* 1. 도파민 중독 스캔 */}
+                        <div
+                            onClick={() => router.push('/minitest/DopamineTest')}
+                            className="cursor-pointer rounded-[2.5rem] bg-[#151515] border border-white/5 hover:border-pink-500/50 transition-all duration-500 group overflow-hidden shadow-2xl hover:shadow-pink-500/20"
+                        >
+                            <div className="relative h-64 overflow-hidden">
+                                <img
+                                    src="/dopamine-thumb.jpg"
+                                    alt="Dopamine Scan"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#151515] via-transparent to-transparent" />
+                                {/* 네온 포인트 라인 */}
+                                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.8)]" />
+                            </div>
+                            <div className="p-8">
+                                <h3 className="font-bold text-xl mb-2 text-white group-hover:text-pink-500 transition-colors">
+                                    도파민 중독 스캔
+                                </h3>
+                                <p className="text-sm text-gray-500">뇌의 자극 의존도 정밀 체크</p>
+                            </div>
+                        </div>
+
+                        {/* 2. 페르소나 지수 */}
+                        <div
+                            onClick={() => router.push('/minitest/PersonaTest')}
+                            className="cursor-pointer rounded-[2.5rem] bg-[#151515] border border-white/5 hover:border-blue-400/50 transition-all duration-500 group overflow-hidden shadow-2xl hover:shadow-blue-400/20"
+                        >
+                            <div className="relative h-64 overflow-hidden">
+                                <img
+                                    src="/persona-thumb.jpg"
+                                    alt="Persona Test"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#151515] via-transparent to-transparent" />
+                                {/* 네온 포인트 라인 */}
+                                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.8)]" />
+                            </div>
+                            <div className="p-8">
+                                <h3 className="font-bold text-xl mb-2 text-white group-hover:text-blue-400 transition-colors">
+                                    유행 민감도 테스트
+                                </h3>
+                                <p className="text-sm text-gray-500">나는 얼마나 유행을 따라갈까</p>
+                            </div>
+                        </div>
+
+                        {/* 3. 전체 테스트 보기 */}
+                        <div
+                            onClick={() => router.push('/minitest')}
+                            className="cursor-pointer rounded-[2.5rem] bg-orange-600 transition-all duration-500 group overflow-hidden shadow-2xl hover:shadow-orange-600/40 hover:-translate-y-2"
+                        >
+                            <div className="relative h-64 overflow-hidden">
+                                <img
+                                    src="/all.png"
+                                    alt="View All"
+                                    className="w-full h-full object-cover mix-blend-overlay opacity-50 group-hover:scale-110 transition-transform duration-700"
+                                />
+                            </div>
+                            <div className="p-8 text-white">
+                                <h3 className="font-bold text-xl mb-2">전체 테스트 보기</h3>
+                                <p className="text-sm opacity-80">나를 찾는 모든 여정 탐색</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
             <div className="py-20">
                 <MainClassSlider />
             </div>
