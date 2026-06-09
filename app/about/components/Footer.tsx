@@ -28,10 +28,7 @@ export default function Footer() {
 
                     {/* 연락처 및 주소 */}
                     <div className="flex flex-col items-center md:items-end space-y-4">
-                        <div className="flex items-center gap-3 text-sm group transition-colors hover:text-white">
-                            <MapPin size={18} className="text-orange-600" />
-                            <span>서울 노원구 화랑로 453, 5층</span>
-                        </div>
+                       
                         
                         <div className="flex items-center gap-3 text-sm group transition-colors hover:text-white">
                             <Mail size={18} className="text-orange-600" />
