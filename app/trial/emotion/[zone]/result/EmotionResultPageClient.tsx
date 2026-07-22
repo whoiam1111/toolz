@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { questions, PERFUME_DATA, PerfumeInfo } from '@/app/lib/data';
 import { motion } from 'framer-motion';
 
-type ZoneType = 'heart' | 'head' | 'gut';
+type ZoneType = 'head' | 'heart' | 'gut';
 
 interface ZoneState {
     heart?: number;
@@ -21,16 +21,16 @@ const ZONES: {
     badgeBg: string;
 }[] = [
     {
-        key: 'heart',
-        name: '가슴형',
+        key: 'head',
+        name: '머리형',
         englishName: 'TOP ZONE',
 
         subTitle: '이성과 명확한 분석',
         badgeBg: 'bg-[#E8DED1]/60 text-[#6B5E51]',
     },
     {
-        key: 'head',
-        name: '머리형',
+        key: 'heart',
+        name: '가슴형',
         englishName: 'MIDDLE ZONE',
         subTitle: '감성과 내면의 끌림',
         badgeBg: 'bg-[#E8DED1]/60 text-[#6B5E51]',
