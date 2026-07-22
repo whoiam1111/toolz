@@ -10,8 +10,8 @@
         "postbuild": "next-sitemap"
     },
     "dependencies": {
-        "@supabase/auth-helpers-nextjs": "^0.10.0",
-        "@supabase/supabase-js": "^2.49.1",
+        "@supabase/ssr": "^0.12.3",
+        "@supabase/supabase-js": "^2.110.7",
         "dom-to-image": "^2.6.0",
         "framer-motion": "^12.25.0",
         "html-to-image": "^1.11.13",

@@ -1,6 +1,9 @@
 'use client';
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 
-// 타입 정의가 없으면 이렇게:
-export const supabase = createClientComponentClient();
+// 수정된 코드: auth-helpers 대신 ssr 패키지의 브라우저 클라이언트 사용
+export const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);

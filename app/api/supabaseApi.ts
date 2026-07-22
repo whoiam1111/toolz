@@ -1,13 +1,36 @@
 import { supabase } from '../lib/supabase';
-import { Session } from '@supabase/auth-helpers-nextjs';
+import { Session } from '@supabase/supabase-js';
 
-export const getSession = async (): Promise<Session | null> => {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) {
-        console.error('getSession error:', error.message);
+export const getSession = async () => {
+    try {
+        const {
+            data: { session },
+            error,
+        } = await supabase.auth.getSession();
+
+        if (error) {
+            console.warn('세션 읽기 실패 (만료된 토큰):', error.message);
+            // 만료되어 세션을 불러올 수 없다면 로컬스토리지 정리
+            localStorage.removeItem('login_time');
+            return null;
+        }
+
+        // 토큰 유효기간(expires_at)이 현재 시간보다 이전인지 검증 (안전장치)
+        if (session && session.expires_at) {
+            const isExpired = session.expires_at * 1000 < Date.now();
+            if (isExpired) {
+                console.warn('토큰 유효기간 만료됨');
+                await supabase.auth.signOut();
+                localStorage.removeItem('login_time');
+                return null;
+            }
+        }
+
+        return session;
+    } catch (e) {
+        console.error('Session error:', e);
         return null;
     }
-    return data.session;
 };
 export const signIn = async (email: string, password: string) => {
     return await supabase.auth.signInWithPassword({ email, password });

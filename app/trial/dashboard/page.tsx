@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Session } from '@supabase/supabase-js';
 
 interface Answer {
     clientid: string;
@@ -22,24 +20,9 @@ export default function DashboardPage() {
     const [userResults, setUserResults] = useState<UserResult[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [session, setSession] = useState<Session | null>(null);
     const router = useRouter();
-    const supabase = createClientComponentClient();
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            const {
-                data: { session },
-            } = await supabase.auth.getSession();
-            if (!session) {
-                router.replace('/login');
-            } else {
-                setSession(session);
-            }
-        };
-        checkAuth();
-    }, [router, supabase]);
-
+    // 📥 페이지 열리면 그냥 바로 데이터 가져오기 (세션 눈치 안 봄!)
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -67,13 +50,11 @@ export default function DashboardPage() {
             }
         };
 
-        if (session) {
-            fetchData();
-        }
-    }, [session]);
+        fetchData();
+    }, []);
 
     const handleViewDetails = (user: UserResult) => {
-        router.push(`/trial/dashboard/adminResult?clientid=${user.clientid}`);
+        router.push(`/trial/dashboard/adminResult?clientid=${encodeURIComponent(user.clientid)}`);
     };
 
     const handleDelete = async (clientid: string) => {
@@ -96,58 +77,68 @@ export default function DashboardPage() {
 
     const filteredResults = userResults.filter((user) => user.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    if (!session) {
-        return <div className="text-center mt-10 text-gray-600">로그인 확인 중...</div>;
-    }
-
     if (loading) {
-        return <div className="text-center mt-10 text-gray-600">로딩 중...</div>;
+        return (
+            <div className="min-h-screen bg-[#F7F4EE] flex flex-col items-center justify-center text-[#8C7A6B]">
+                <p className="font-serif italic text-sm tracking-widest animate-pulse">Loading Client Data...</p>
+            </div>
+        );
     }
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-10">
-            <h1 className="text-3xl font-bold mb-6 text-center text-green-700">상담사 대시보드</h1>
+        <div className="max-w-5xl mx-auto px-4 py-10 font-sans">
+            <h1 className="text-3xl font-bold mb-6 text-center text-[#383129]">상담사 대시보드</h1>
 
             <div className="mb-6 text-center">
                 <input
                     type="text"
-                    placeholder="이름으로 검색..."
-                    className="border border-gray-300 px-4 py-2 rounded-lg w-full max-w-md"
+                    placeholder="이름/ID로 검색..."
+                    className="border border-[#D8CFC4] bg-[#FCFAF7] px-4 py-2 rounded-xl w-full max-w-md focus:outline-none focus:border-[#8C7A6B]"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="w-full table-auto border border-gray-200 text-sm">
+            <div className="overflow-x-auto bg-[#FCFAF7] border border-[#E6DDD0] rounded-2xl shadow-sm">
+                <table className="w-full table-auto border-collapse text-sm">
                     <thead>
-                        <tr className="bg-gray-100 text-gray-700">
-                            <th className="py-3 px-4 border">이름</th>
-                            <th className="py-3 px-4 border">참여시간</th>
-                            <th className="py-3 px-4 border">상세보기</th>
-                            <th className="py-3 px-4 border">삭제</th>
+                        <tr className="bg-[#F3EDE3] text-[#6E6153] border-b border-[#E6DDD0]">
+                            <th className="py-3 px-4 border-r border-[#E6DDD0]">이름 (ID)</th>
+                            <th className="py-3 px-4 border-r border-[#E6DDD0]">참여시간</th>
+                            <th className="py-3 px-4 border-r border-[#E6DDD0]">상세보기</th>
+                            <th className="py-3 px-4">삭제</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredResults.map((user) => {
-                            // 9시간 빼서 원래 한국 시간으로 보정
-                            const korTime = new Date(new Date(user.created_at).getTime() - 9 * 60 * 60 * 1000);
+                            const date = new Date(user.created_at);
+                            const formattedTime = isNaN(date.getTime())
+                                ? '시간 정보 없음'
+                                : date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+
                             return (
-                                <tr key={user.clientid} className="text-center border-t hover:bg-gray-50">
-                                    <td className="py-2 px-4 border">{user.name}</td>
-                                    <td className="py-2 px-4 border">{korTime.toLocaleString('ko-KR')}</td>
-                                    <td className="py-2 px-4 border">
+                                <tr
+                                    key={user.clientid}
+                                    className="text-center border-t border-[#E6DDD0] hover:bg-[#F7F4EE]/60 transition-colors"
+                                >
+                                    <td className="py-3 px-4 border-r border-[#E6DDD0] font-mono text-xs">
+                                        {user.name}
+                                    </td>
+                                    <td className="py-3 px-4 border-r border-[#E6DDD0] text-xs text-[#7A6E63]">
+                                        {formattedTime}
+                                    </td>
+                                    <td className="py-3 px-4 border-r border-[#E6DDD0]">
                                         <button
                                             onClick={() => handleViewDetails(user)}
-                                            className="text-blue-600 hover:underline"
+                                            className="text-[#3A322A] font-semibold hover:underline text-xs"
                                         >
                                             상세보기
                                         </button>
                                     </td>
-                                    <td className="py-2 px-4 border">
+                                    <td className="py-3 px-4">
                                         <button
                                             onClick={() => handleDelete(user.clientid)}
-                                            className="text-red-500 hover:underline"
+                                            className="text-red-500 hover:underline text-xs"
                                         >
                                             삭제
                                         </button>
@@ -157,7 +148,10 @@ export default function DashboardPage() {
                         })}
                         {filteredResults.length === 0 && (
                             <tr>
-                                <td colSpan={4} className="py-4 text-gray-500">
+                                <td
+                                    colSpan={4}
+                                    className="py-8 text-center text-gray-400"
+                                >
                                     검색 결과가 없습니다.
                                 </td>
                             </tr>
