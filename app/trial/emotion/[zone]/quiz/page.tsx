@@ -1,16 +1,16 @@
-// app/trial/emotion/[zone]/quiz/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { questions, Question } from '@/app/lib/data';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function QuizPage() {
     const params = useParams();
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    // 💡 수정 1: URL 파라미터를 안전하게 소문자로 변환하고 검증
+    // URL 파라미터를 안전하게 소문자로 변환하고 검증
     const rawZone = typeof params?.zone === 'string' ? params.zone.toLowerCase() : '';
     const zone = (['heart', 'head', 'gut'].includes(rawZone) ? rawZone : 'heart') as 'heart' | 'head' | 'gut';
 
@@ -22,24 +22,30 @@ export default function QuizPage() {
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        // 💡 수정 2: zone이 변경될 때 올바르게 필터링하고 상태 초기화
         const filtered = questions.filter((q) => q.zone === zone);
         setZoneQuestions(filtered);
 
-        // 만약 사용자가 URL을 직접 바꿔서 이동할 경우를 대비해 진행 상태 초기화
         setCurrent(0);
         setAnswers({});
     }, [zone]);
 
-    if (!zoneQuestions.length) return <div className="p-10 text-center">질문을 불러오는 중...</div>;
+    if (!zoneQuestions.length)
+        return (
+            <div className="min-h-screen bg-[#F7F4EE] flex items-center justify-center font-serif text-[#8C7A6B]">
+                Loading...
+            </div>
+        );
 
     const currentQ = zoneQuestions[current];
 
     const handleAnswer = (score: number) => {
         setAnswers((prev) => ({ ...prev, [currentQ.id]: score }));
-        if (current < zoneQuestions.length - 1) {
-            setCurrent(current + 1);
-        }
+        // 잠시 딜레이를 주어 사용자가 누른 점수를 확인할 수 있게 함
+        setTimeout(() => {
+            if (current < zoneQuestions.length - 1) {
+                setCurrent(current + 1);
+            }
+        }, 300);
     };
 
     const handleGoBack = () => {
@@ -82,60 +88,99 @@ export default function QuizPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 px-4 py-10">
-            <div className="relative bg-white shadow-xl rounded-2xl p-8 w-full max-w-xl text-center">
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-6">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F4EE] px-4 py-10 font-serif relative overflow-hidden">
+            {/* 햇살 감성의 배경 조명 효과 */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#EFE8DC] to-transparent rounded-full blur-[100px] pointer-events-none opacity-80" />
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[#EFE8DC] to-transparent rounded-full blur-[100px] pointer-events-none opacity-60" />
+
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                className="relative bg-[#FCFAF7] border border-[#E6DDD0] shadow-md shadow-[#D8CFCE]/20 rounded-2xl p-8 md:p-12 w-full max-w-xl text-center z-10"
+            >
+                {/* 상단 서브 타이틀 및 진행도 */}
+                <div className="flex justify-between items-center mb-8">
+                    <span className="text-[10px] font-sans tracking-[0.3em] text-[#8C7A6B] uppercase font-light">
+                        {zone} ZONE
+                    </span>
+                    <span className="text-[10px] font-sans tracking-widest text-[#A39585]">
+                        {current + 1} / {zoneQuestions.length}
+                    </span>
+                </div>
+
+                {/* 프로그레스 바 */}
+                <div className="w-full h-[2px] bg-[#E6DDD0] overflow-hidden mb-10">
                     <div
-                        className="h-full bg-emerald-500 transition-all duration-300"
+                        className="h-full bg-[#8C7A6B] transition-all duration-500 ease-out"
                         style={{ width: `${((current + 1) / zoneQuestions.length) * 100}%` }}
                     />
                 </div>
 
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">
-                    {zone.toUpperCase()} ZONE ({current + 1}/{zoneQuestions.length})
-                </span>
+                {/* 질문 영역 (애니메이션 적용) */}
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentQ.id}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="min-h-[120px] flex flex-col justify-center"
+                    >
+                        <h2 className="text-xl md:text-2xl font-normal text-[#383129] leading-relaxed italic break-keep">
+                            {currentQ.question}
+                        </h2>
+                    </motion.div>
+                </AnimatePresence>
 
-                <h2 className="text-xl font-semibold mb-8 text-gray-800 leading-snug min-h-[56px] flex items-center justify-center">
-                    {currentQ.question}
-                </h2>
-
-                <div className="grid grid-cols-5 gap-2 mb-4">
-                    {[1, 2, 3, 4, 5].map((score) => (
-                        <button
-                            key={score}
-                            onClick={() => handleAnswer(score)}
-                            className={`py-3.5 rounded-lg font-bold text-sm transition ${
-                                answers[currentQ.id] === score
-                                    ? 'bg-emerald-500 text-white shadow-md'
-                                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800'
-                            }`}
-                        >
-                            {score}
-                        </button>
-                    ))}
+                {/* 1~5점 점수 선택 */}
+                <div className="grid grid-cols-5 gap-2 md:gap-3 mb-8">
+                    {[1, 2, 3, 4, 5].map((score) => {
+                        const isSelected = answers[currentQ.id] === score;
+                        return (
+                            <button
+                                key={score}
+                                onClick={() => handleAnswer(score)}
+                                className={`py-4 rounded-xl font-sans text-sm transition-all duration-300 border ${
+                                    isSelected
+                                        ? 'bg-[#3A322A] text-[#F7F4EE] border-[#3A322A] shadow-md scale-[1.02]'
+                                        : 'bg-[#F7F4EE] text-[#6B5E51] border-[#D8CEBF] hover:bg-[#EFE8DC]'
+                                }`}
+                            >
+                                {score}
+                            </button>
+                        );
+                    })}
                 </div>
 
-                {current > 0 && (
-                    <button
-                        onClick={handleGoBack}
-                        className="mt-3 text-sm text-gray-400 underline hover:text-gray-600"
-                    >
-                        ← 이전 질문으로
-                    </button>
-                )}
-            </div>
-
-            {Object.keys(answers).length === zoneQuestions.length && (
-                <button
-                    onClick={handleSubmitResults}
-                    disabled={isSaving}
-                    className={`mt-6 py-3.5 px-8 rounded-xl font-bold shadow-lg transition ${
-                        isSaving ? 'bg-gray-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-black text-white'
-                    }`}
-                >
-                    {isSaving ? '데이터 저장 중...' : '결과 보기 🌿'}
-                </button>
-            )}
+                {/* 하단 컨트롤 (이전 버튼 / 결과 보기) */}
+                <div className="h-12 flex items-center justify-center mt-4">
+                    {Object.keys(answers).length === zoneQuestions.length ? (
+                        <motion.button
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            onClick={handleSubmitResults}
+                            disabled={isSaving}
+                            className={`w-full py-3.5 px-8 rounded-xl font-sans text-xs tracking-[0.2em] uppercase transition duration-300 font-light shadow-sm ${
+                                isSaving
+                                    ? 'bg-[#D8CEBF] text-[#8C7A6B] cursor-not-allowed'
+                                    : 'bg-[#3A322A] hover:bg-[#25201A] text-[#F7F4EE]'
+                            }`}
+                        >
+                            {isSaving ? 'Processing...' : 'View Results ✦'}
+                        </motion.button>
+                    ) : (
+                        current > 0 && (
+                            <button
+                                onClick={handleGoBack}
+                                className="text-[10px] font-sans tracking-widest text-[#A39585] uppercase hover:text-[#6B5E51] transition"
+                            >
+                                ← Previous
+                            </button>
+                        )
+                    )}
+                </div>
+            </motion.div>
         </div>
     );
 }
