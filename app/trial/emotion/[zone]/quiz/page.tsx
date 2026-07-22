@@ -1,4 +1,4 @@
-// app/trial/emotion/[zone]/quiz/page.tsx (또는 QuizPage 위치)
+// app/trial/emotion/[zone]/quiz/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,16 +10,25 @@ export default function QuizPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const zone = (params.zone as 'heart' | 'head' | 'gut') || 'heart';
+    // 💡 수정 1: URL 파라미터를 안전하게 소문자로 변환하고 검증
+    const rawZone = typeof params?.zone === 'string' ? params.zone.toLowerCase() : '';
+    const zone = (['heart', 'head', 'gut'].includes(rawZone) ? rawZone : 'heart') as 'heart' | 'head' | 'gut';
+
     const clientid = searchParams.get('clientid');
 
     const [zoneQuestions, setZoneQuestions] = useState<Question[]>([]);
     const [answers, setAnswers] = useState<{ [qId: string]: number }>({});
     const [current, setCurrent] = useState<number>(0);
-    const [isSaving, setIsSaving] = useState(false); // 💡 저장 중 버튼 연타 방지용 상태 추가
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        setZoneQuestions(questions.filter((q) => q.zone === zone));
+        // 💡 수정 2: zone이 변경될 때 올바르게 필터링하고 상태 초기화
+        const filtered = questions.filter((q) => q.zone === zone);
+        setZoneQuestions(filtered);
+
+        // 만약 사용자가 URL을 직접 바꿔서 이동할 경우를 대비해 진행 상태 초기화
+        setCurrent(0);
+        setAnswers({});
     }, [zone]);
 
     if (!zoneQuestions.length) return <div className="p-10 text-center">질문을 불러오는 중...</div>;
@@ -44,14 +53,11 @@ export default function QuizPage() {
         }
     };
 
-    // 🔥 여기서 진짜 DB 저장을 처리합니다!
     const handleSubmitResults = async () => {
         if (!clientid) return alert('이름 정보가 필요합니다.');
-
-        setIsSaving(true); // 저장 시작
+        setIsSaving(true);
 
         try {
-            // 1. API를 호출하여 DB에 답변 병합 저장
             const response = await fetch('/api/saveAnswers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -60,7 +66,6 @@ export default function QuizPage() {
 
             if (!response.ok) throw new Error('DB 저장 실패');
 
-            // 2. DB 저장이 완료되면 결과 페이지로 이동 (기존 로직 유지)
             const queryString = Object.entries(answers)
                 .map(([id, score]) => `${id}-${score}`)
                 .join(',');
@@ -79,7 +84,6 @@ export default function QuizPage() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 px-4 py-10">
             <div className="relative bg-white shadow-xl rounded-2xl p-8 w-full max-w-xl text-center">
-                {/* 프로그레스 바 */}
                 <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-6">
                     <div
                         className="h-full bg-emerald-500 transition-all duration-300"
@@ -95,7 +99,6 @@ export default function QuizPage() {
                     {currentQ.question}
                 </h2>
 
-                {/* 1~5점 점수 선택 */}
                 <div className="grid grid-cols-5 gap-2 mb-4">
                     {[1, 2, 3, 4, 5].map((score) => (
                         <button
