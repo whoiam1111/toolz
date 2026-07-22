@@ -8,14 +8,15 @@ const ZONE_INFO = {
     heart: {
         title: 'Emotion & Affection',
         englishTitle: 'TOP ZONE',
-        subtitle: '감정과 관계, 내면의 끌림을 알아보는 조향 스피릿',
-        tag: '🌹 Emotion & Affection',
+        subtitle: '이성과 분석, 신중한 생각을 알아채는 조향 스피릿',
+        tag: '🌿 Logic & Insight',
     },
     head: {
         title: 'Intellect & Clarity',
         englishTitle: 'MIDDLE ZONE',
-        subtitle: '이성과 분석, 신중한 생각을 알아채는 조향 스피릿',
-        tag: '🌿 Logic & Insight',
+
+        subtitle: '감정과 관계, 내면의 끌림을 알아보는 조향 스피릿',
+        tag: '🌹 Emotion & Affection',
     },
     gut: {
         title: 'Instinct & Grounding',

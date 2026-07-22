@@ -24,14 +24,15 @@ const ZONES: {
         key: 'heart',
         name: '가슴형',
         englishName: 'TOP ZONE',
-        subTitle: '감성과 내면의 끌림',
+
+        subTitle: '이성과 명확한 분석',
         badgeBg: 'bg-[#E8DED1]/60 text-[#6B5E51]',
     },
     {
         key: 'head',
         name: '머리형',
         englishName: 'MIDDLE ZONE',
-        subTitle: '이성과 명확한 분석',
+        subTitle: '감성과 내면의 끌림',
         badgeBg: 'bg-[#E8DED1]/60 text-[#6B5E51]',
     },
     {
