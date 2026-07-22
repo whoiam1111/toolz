@@ -6,16 +6,17 @@ import { motion } from 'framer-motion';
 
 const ZONE_INFO = {
     heart: {
-        title: 'Emotion & Affection',
-        englishTitle: 'TOP ZONE',
-        subtitle: '감정과 관계, 내면의 끌림을 알아보는 조향 스피릿',
-        tag: '🌹 Emotion & Affection',
-    },
-    head: {
         title: 'Intellect & Clarity',
-        englishTitle: 'MIDDLE ZONE',
+        englishTitle: 'TOP ZONE',
         subtitle: '이성과 분석, 신중한 생각을 알아채는 조향 스피릿',
         tag: '🌿 Logic & Insight',
+    },
+    head: {
+        title: 'Emotion & Affection',
+        englishTitle: 'MIDDLE ZONE',
+
+        subtitle: '감정과 관계, 내면의 끌림을 알아보는 조향 스피릿',
+        tag: '🌹 Emotion & Affection',
     },
     gut: {
         title: 'Instinct & Grounding',
@@ -28,7 +29,7 @@ const ZONE_INFO = {
 export default function ZonePage() {
     const params = useParams();
     const router = useRouter();
-    const zone = (params.zone as 'heart' | 'head' | 'gut') || 'heart';
+    const zone = (params.zone as 'head' | 'heart' | 'gut') || 'head';
     const info = ZONE_INFO[zone] || ZONE_INFO.heart;
 
     const [name, setName] = useState('');
