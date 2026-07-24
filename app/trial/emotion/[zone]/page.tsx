@@ -5,13 +5,13 @@ import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 const ZONE_INFO = {
-    heart: {
+    head: {
         title: 'Intellect & Clarity',
         englishTitle: 'TOP ZONE',
         subtitle: '이성과 분석, 신중한 생각을 알아채는 조향 스피릿',
         tag: '🌿 Logic & Insight',
     },
-    head: {
+    heart: {
         title: 'Emotion & Affection',
         englishTitle: 'MIDDLE ZONE',
 
