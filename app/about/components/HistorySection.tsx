@@ -23,21 +23,20 @@ const historyData = [
 
 export default function HistorySection() {
     return (
-        /* 전체 배경: 오프화이트 톤 (#f8fafc) */
-        <section className="py-24 max-w-5xl mx-auto px-6 bg-[#f8fafc]">
+        <section className="py-24 max-w-5xl mx-auto px-6 bg-[#0f0f0f]">
             <motion.h3
-                className="text-3xl md:text-4xl font-black text-center mb-24 tracking-tight text-[#0a1f44]"
+                className="text-3xl md:text-4xl font-black text-center mb-24 tracking-tighter text-white"
                 initial={{ opacity: 0, y: -20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
             >
-                Our <span className="text-blue-600">History</span>
+                Our <span className="text-orange-500">History</span>
             </motion.h3>
 
             <div className="relative max-w-2xl mx-auto">
-                {/* 세로 타임라인 라인 - 딥 블루 그라데이션 적용 */}
-                <div className="absolute top-2 left-[7px] h-full w-[2px] bg-gradient-to-b from-[#0a1f44] via-blue-200 to-transparent rounded"></div>
+                {/* 세로 타임라인 라인 - 그라데이션 적용 */}
+                <div className="absolute top-2 left-[7px] h-full w-[2px] bg-gradient-to-b from-orange-600 via-orange-900/20 to-transparent rounded"></div>
 
                 {historyData.map((item, index) => (
                     <motion.div
@@ -49,20 +48,20 @@ export default function HistorySection() {
                         transition={{ duration: 0.7, delay: index * 0.2 }}
                     >
                         {/* 타임라인 포인트 원 */}
-                        <div className="absolute left-0 top-1.5 w-4 h-4 bg-[#f8fafc] border-2 border-blue-600 rounded-full z-10 group-hover:bg-[#0a1f44] group-hover:border-[#0a1f44] transition-colors duration-300"></div>
+                        <div className="absolute left-0 top-1.5 w-4 h-4 bg-[#0f0f0f] border-2 border-orange-500 rounded-full z-10 group-hover:bg-orange-500 transition-colors duration-300"></div>
 
                         {/* 연도 및 이벤트 제목 */}
                         <div className="flex flex-col md:flex-row md:items-baseline md:gap-6 mb-3">
-                            <time className="text-2xl font-black text-blue-600 tracking-tight">
+                            <time className="text-2xl font-black text-orange-500 tracking-tighter">
                                 {item.year}
                             </time>
-                            <h4 className="text-xl font-bold text-[#0a1f44] group-hover:text-blue-600 transition-colors">
+                            <h4 className="text-xl font-bold text-white group-hover:text-orange-400 transition-colors">
                                 {item.event}
                             </h4>
                         </div>
 
                         {/* 상세 설명 */}
-                        <p className="leading-relaxed text-slate-600 font-normal break-keep max-w-lg">
+                        <p className="leading-relaxed text-gray-400 font-light break-keep max-w-lg">
                             {item.description}
                         </p>
                     </motion.div>

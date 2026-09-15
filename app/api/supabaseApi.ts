@@ -10,10 +10,12 @@ export const getSession = async () => {
 
         if (error) {
             console.warn('세션 읽기 실패 (만료된 토큰):', error.message);
+            // 만료되어 세션을 불러올 수 없다면 로컬스토리지 정리
             localStorage.removeItem('login_time');
             return null;
         }
 
+        // 토큰 유효기간(expires_at)이 현재 시간보다 이전인지 검증 (안전장치)
         if (session && session.expires_at) {
             const isExpired = session.expires_at * 1000 < Date.now();
             if (isExpired) {
@@ -30,7 +32,6 @@ export const getSession = async () => {
         return null;
     }
 };
-
 export const signIn = async (email: string, password: string) => {
     return await supabase.auth.signInWithPassword({ email, password });
 };
@@ -61,7 +62,6 @@ export const savePersonalityTest = async (participantId: string, answers: Record
         },
     ]);
 };
-
 export const savePersonalityTest2 = async (participantId: string, answers: Record<string, number>) => {
     return await supabase.from('personality_tests2').insert([
         {
@@ -79,7 +79,6 @@ export const saveAttachmentTest = async (participantId: string, answers: Record<
         },
     ]);
 };
-
 export const getParticipants = async () => {
     const {
         data: { user },
@@ -95,18 +94,7 @@ export const getParticipants = async () => {
         .from('participant')
         .select('*')
         .eq('counselors', user.id)
-        .order('created_at', { ascending: false });
-
-    return { data, error };
-};
-
-// 🔹 [추가됨] ID 기반 단일 참여자 상세 조회
-export const getParticipantById = async (id: string) => {
-    const { data, error } = await supabase
-        .from('participant')
-        .select('*')
-        .eq('id', id)
-        .single();
+        .order('created_at', { ascending: false }); // 최신순 정렬 추가
 
     return { data, error };
 };
@@ -128,26 +116,6 @@ export const addNewParticipant = async (participant: {
 
     return { data, error };
 };
-
-// 🔹 [추가됨] 참여자 정보 수정
-export const updateParticipant = async (
-    id: string,
-    updateData: Partial<{
-        name: string;
-        birth_date: string;
-        stress: string;
-        religion: string;
-    }>
-) => {
-    const { data, error } = await supabase
-        .from('participant')
-        .update(updateData)
-        .eq('id', id)
-        .select();
-
-    return { data, error };
-};
-
 export async function getCoreEmotionTestResult(participantId: string) {
     const { data, error } = await supabase
         .from('core_emotion_tests')
@@ -192,7 +160,6 @@ export const uploadSignature = async (dataUrl: string, fileName: string) => {
 
     return { url: publicUrl, error: null };
 };
-
 export async function deleteParticipant(id: string) {
     return await supabase.from('participant').delete().eq('id', id);
 }

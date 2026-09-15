@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Session } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js'; // 패키지 타입 참조 안정화
 import { getSession, signIn, signOut, onAuthStateChange } from '../api/supabaseApi';
 
 type AuthContextType = {
@@ -13,16 +13,14 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 🔒 세션 만료 시간 설정: 12시간 (밀리초)
-const EXPIRATION_TIME = 12 * 60 * 60 * 1000;
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    // undefined: 세션 확인 중, null: 로그아웃, Session: 로그인 완료
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    // undefined: 세션 확인 중, null: 로그아웃, Session: 로그인
     const [session, setSession] = useState<Session | null | undefined>(undefined);
     const router = useRouter();
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-    // 자동 로그아웃 예약 타이머 정리
+    const EXPIRATION_TIME = 12 * 60 * 60 * 1000; // 12시간
+
     const clearLogoutTimer = useCallback(() => {
         if (timerRef.current) {
             clearTimeout(timerRef.current);
@@ -30,7 +28,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
-    // 로그아웃 실행
     const logout = useCallback(async () => {
         clearLogoutTimer();
         localStorage.removeItem('login_time');
@@ -39,7 +36,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.replace('/login');
     }, [clearLogoutTimer, router]);
 
-    // 남은 시간 계산 후 로그아웃 스케줄링
     const scheduleLogout = useCallback(
         (timeLeft: number) => {
             clearLogoutTimer();
@@ -57,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         let isMounted = true;
 
-        // 💡 1. 초기 세션 체크 및 만료 검사
+        // 💡 1. 세션 체크 프로세스
         const initSession = async () => {
             try {
                 const currentSession = await getSession();
@@ -68,6 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     let loginTime = localStorage.getItem('login_time');
                     const now = Date.now();
 
+                    // login_time이 없으면 현재 시각으로 부여
                     if (!loginTime) {
                         loginTime = now.toString();
                         localStorage.setItem('login_time', loginTime);
@@ -76,6 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     const elapsed = now - Number(loginTime);
 
                     if (elapsed >= EXPIRATION_TIME) {
+                        // 12시간 지났으면 로그아웃
                         await logout();
                     } else {
                         setSession(currentSession);
@@ -92,11 +90,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         initSession();
 
-        // 💡 2. Supabase Auth Listener (상태 변경 감지)
+        // 💡 2. Supabase Auth Listener (세션 자동 갱신 반영)
         const { data: authListener } = onAuthStateChange((event, newSession) => {
             if (!isMounted) return;
 
-            if (event === 'SIGNED_IN' || (event === 'TOKEN_REFRESHED' && newSession)) {
+            // Supabase에서 세션을 새로 읽어왔거나 갱신했을 때
+            if (newSession) {
                 setSession(newSession);
                 let loginTime = localStorage.getItem('login_time');
                 if (!loginTime) {
@@ -106,8 +105,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const elapsed = Date.now() - Number(loginTime);
                 if (elapsed < EXPIRATION_TIME) {
                     scheduleLogout(EXPIRATION_TIME - elapsed);
-                } else {
-                    logout();
                 }
             } else if (event === 'SIGNED_OUT') {
                 clearLogoutTimer();
@@ -121,7 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             clearLogoutTimer();
             authListener?.subscription?.unsubscribe();
         };
-    }, [clearLogoutTimer, logout, scheduleLogout]);
+    }, [EXPIRATION_TIME, clearLogoutTimer, logout, scheduleLogout]);
 
     const login = async (email: string, password: string) => {
         const { data, error } = await signIn(email, password);
@@ -135,17 +132,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    return (
-        <AuthContext.Provider value={{ session, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={{ session, login, logout }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth는 AuthProvider 내부에서만 사용할 수 있습니다.');
-    }
+    if (!context) throw new Error('useAuth must be used within an AuthProvider');
     return context;
 };
