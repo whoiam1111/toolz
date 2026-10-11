@@ -212,7 +212,7 @@ export default function DopamineTest() {
                             <div className="space-y-6 mb-12">
                                 <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100/50">
                                     <p className="text-sm leading-relaxed text-slate-600 break-keep font-medium">
-                                        "{res.desc}"
+                                        &quot;{res.desc}&quot;
                                     </p>
                                 </div>
 

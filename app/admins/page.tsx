@@ -1,33 +1,7 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../context/AuthContext';
-import LoadingSpinner from '../about/components/LoadingSpinner';
 import Link from 'next/link';
 
+// 접근 권한 확인은 proxy.ts(서버)와 admins/layout.tsx(화면)에서 한다
 export default function AdminPage() {
-    const { session } = useAuth();
-    const router = useRouter();
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        if (!session) {
-            router.replace('/login');
-            return;
-        }
-        if (session.user.email !== 'seouljdb@jdb.com') {
-            router.replace('/unauthorized');
-            return;
-        }
-
-        setIsLoading(false);
-    }, [session, router]);
-
-    if (isLoading) {
-        return <LoadingSpinner />;
-    }
-
     return (
         <div className="min-h-screen bg-neutral-100 flex items-center justify-center px-4">
             <div className="w-full max-w-3xl p-10 bg-white rounded-3xl shadow-lg space-y-10">
@@ -50,10 +24,11 @@ export default function AdminPage() {
 
 function AdminButton({ href, label }: { href: string; label: string }) {
     return (
-        <Link href={href} className="w-full">
-            <button className="w-full py-4 px-6 bg-neutral-800 text-white rounded-xl text-base font-medium shadow-sm hover:bg-neutral-700 transition duration-200">
-                {label}
-            </button>
+        <Link
+            href={href}
+            className="w-full py-4 px-6 bg-neutral-800 text-white rounded-xl text-base font-medium text-center shadow-sm hover:bg-neutral-700 transition duration-200"
+        >
+            {label}
         </Link>
     );
 }

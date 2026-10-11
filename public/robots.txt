@@ -1,8 +1,11 @@
 # *
 User-agent: *
 Allow: /
-Disallow: /admin
+Disallow: /admins
 Disallow: /dashboard
+Disallow: /trial/dashboard
+Disallow: /login
+Disallow: /unauthorized
 
 # Host
 Host: https://www.toolz.co.kr/

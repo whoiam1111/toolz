@@ -20,20 +20,20 @@ export default function ViewContent() {
     const [updatingId, setUpdatingId] = useState<number | null>(null);
 
     useEffect(() => {
-        fetchContents();
+        // 상태 변경은 응답이 온 뒤(then 콜백)에만 한다
+        supabase
+            .from('contents')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .then(({ data, error }) => {
+                if (error) {
+                    console.error('Error fetching contents:', error.message);
+                } else {
+                    setContents(data);
+                }
+                setLoading(false);
+            });
     }, []);
-
-    const fetchContents = async () => {
-        setLoading(true);
-        const { data, error } = await supabase.from('contents').select('*').order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('Error fetching contents:', error.message);
-        } else {
-            setContents(data);
-        }
-        setLoading(false);
-    };
 
     const toggleFeatured = async (id: number) => {
         const featuredCount = contents.filter((c) => c.is_featured).length;

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Mail, MapPin, Instagram, Youtube } from 'lucide-react';
+import { Mail, Instagram, Youtube } from 'lucide-react';
 
 export default function Footer() {
     return (

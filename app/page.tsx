@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
-import { Library, Users, Target, ArrowRight, X, LucideIcon } from 'lucide-react';
+import { Library, Users, Target, ArrowRight, LucideIcon } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
 // 기존 컴포넌트 임포트
@@ -38,89 +38,10 @@ const whyNrpItems: FeatureItem[] = [
 ];
 
 export default function Home() {
-    const [isMindpointPopupVisible, setIsMindpointPopupVisible] = useState(false);
-    const [isSurveyPopupVisible, setIsSurveyPopupVisible] = useState(false);
-    const [isAnimatingMindpoint, setIsAnimatingMindpoint] = useState(false);
-    const [isAnimatingSurvey, setIsAnimatingSurvey] = useState(false);
-
-    useEffect(() => {
-        const now = new Date().getTime();
-        const mpExpire = localStorage.getItem('dontShowMindpointUntil');
-        if (!mpExpire || now > parseInt(mpExpire, 10)) {
-            setTimeout(() => {
-                setIsMindpointPopupVisible(true);
-                requestAnimationFrame(() => setIsAnimatingMindpoint(true));
-            }, 500);
-        }
-        const surveyExpire = localStorage.getItem('dontShowSurveyUntil');
-        if (!surveyExpire || now > parseInt(surveyExpire, 10)) {
-            setTimeout(() => {
-                setIsSurveyPopupVisible(true);
-                requestAnimationFrame(() => setIsAnimatingSurvey(true));
-            }, 800);
-        }
-    }, []);
-
-    const closeMindpointPopup = () => {
-        setIsAnimatingMindpoint(false);
-        setTimeout(() => setIsMindpointPopupVisible(false), 300);
-    };
-
-    const closeSurveyPopup = () => {
-        setIsAnimatingSurvey(false);
-        setTimeout(() => setIsSurveyPopupVisible(false), 300);
-    };
-
-    const dontShowMindpointToday = () => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        localStorage.setItem('dontShowMindpointUntil', tomorrow.getTime().toString());
-        closeMindpointPopup();
-    };
-
-    const dontShowSurveyToday = () => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        localStorage.setItem('dontShowSurveyUntil', tomorrow.getTime().toString());
-        closeSurveyPopup();
-    };
     const router = useRouter();
     return (
         <div className="bg-[#0f0f0f] text-white selection:bg-orange-500 selection:text-white overflow-x-hidden antialiased font-sans">
-            {/* --- 팝업 섹션 --- */}
-            {/* {isMindpointPopupVisible && (
-                <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-                    <div className={`relative w-full max-sm:max-w-xs max-w-sm bg-[#1a1a1a] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isAnimatingMindpoint ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-                        <div className="relative aspect-[4/5] w-full">
-                            <Image src="/MINDPOINT.jpg" alt="마인드포인트" fill className="object-cover" sizes="400px" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent" />
-                        </div>
-                        <button onClick={closeMindpointPopup} className="absolute top-4 right-4 p-2 bg-black/40 hover:bg-white/10 rounded-full text-white"><X size={20}/></button>
-                        <div className="p-8 text-center">
-                            <Link href="/content" className="w-full block bg-orange-600 text-white font-bold py-4 rounded-xl hover:bg-orange-500 transition">마인드포인트 알아보기</Link>
-                            <button onClick={dontShowMindpointToday} className="text-gray-500 text-xs mt-4 hover:text-gray-300 underline">오늘 하루 보지 않기</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {isSurveyPopupVisible && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-                    <div className={`relative w-full max-sm:max-w-xs max-w-sm bg-[#1a1a1a] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isAnimatingSurvey ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-                        <div className="relative aspect-video w-full">
-                            <Image src="/stress.jpg" alt="설문조사" fill className="object-cover" sizes="400px" />
-                        </div>
-                        <button onClick={closeSurveyPopup} className="absolute top-4 right-4 p-2 bg-black/40 hover:bg-white/10 rounded-full text-white"><X size={20}/></button>
-                        <div className="p-8 text-center">
-                            <h3 className="text-xl font-bold mb-2">스트레스 서베이 참여</h3>
-                            <p className="text-gray-400 text-sm mb-6 font-light">당신의 이야기가 더 나은 내일을 만듭니다.</p>
-                            <a href="https://smore.im/form/rbUBfNZ71d" target="_blank" rel="noopener noreferrer" className="w-full block bg-white text-black font-bold py-4 rounded-xl hover:bg-gray-200 transition">설문 참여하기</a>
-                            <button onClick={dontShowSurveyToday} className="text-gray-500 text-xs mt-4 hover:text-gray-300 underline">오늘 하루 보지 않기</button>
-                        </div>
-                    </div>
-                </div>
-            )} */}
-
+            {/* 마인드포인트/설문 팝업은 비활성화 상태라 제거함 (git 이력에서 복원 가능) */}
             {/* --- Hero Section --- */}
             <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-orange-500/10 via-transparent to-transparent opacity-60" />
@@ -188,10 +109,12 @@ export default function Home() {
                             className="cursor-pointer rounded-[2.5rem] bg-[#151515] border border-white/5 hover:border-pink-500/50 transition-all duration-500 group overflow-hidden shadow-2xl hover:shadow-pink-500/20"
                         >
                             <div className="relative h-64 overflow-hidden">
-                                <img
+                                <Image
                                     src="/dopamine-thumb.jpg"
                                     alt="Dopamine Scan"
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 33vw"
+                                    className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#151515] via-transparent to-transparent" />
                                 {/* 네온 포인트 라인 */}
@@ -211,10 +134,12 @@ export default function Home() {
                             className="cursor-pointer rounded-[2.5rem] bg-[#151515] border border-white/5 hover:border-blue-400/50 transition-all duration-500 group overflow-hidden shadow-2xl hover:shadow-blue-400/20"
                         >
                             <div className="relative h-64 overflow-hidden">
-                                <img
+                                <Image
                                     src="/persona-thumb.jpg"
                                     alt="Persona Test"
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 33vw"
+                                    className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#151515] via-transparent to-transparent" />
                                 {/* 네온 포인트 라인 */}
@@ -234,10 +159,12 @@ export default function Home() {
                             className="cursor-pointer rounded-[2.5rem] bg-orange-600 transition-all duration-500 group overflow-hidden shadow-2xl hover:shadow-orange-600/40 hover:-translate-y-2"
                         >
                             <div className="relative h-64 overflow-hidden">
-                                <img
+                                <Image
                                     src="/all.png"
                                     alt="View All"
-                                    className="w-full h-full object-cover mix-blend-overlay opacity-50 group-hover:scale-110 transition-transform duration-700"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 33vw"
+                                    className="object-cover mix-blend-overlay opacity-50 group-hover:scale-110 transition-transform duration-700"
                                 />
                             </div>
                             <div className="p-8 text-white">

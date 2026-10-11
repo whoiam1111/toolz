@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
+import { usePersistentAnswers } from '@/app/lib/usePersistentAnswers';
 import { useParams, useRouter } from 'next/navigation';
 import { attachmentQuestions } from '@/app/lib/question';
 import { saveAttachmentTest } from '@/app/api/supabaseApi';
@@ -11,27 +12,9 @@ export default function AttachmentTest() {
     const participantId = params?.id as string;
     const storageKey = `attachment_test_${participantId}`;
 
-    const [answers, setAnswers] = useState<{ [key: string]: number }>({});
+    const { answers, setAnswer: handleAnswerChange, clear } = usePersistentAnswers(storageKey);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    useEffect(() => {
-        const savedAnswers = localStorage.getItem(storageKey);
-        if (savedAnswers) {
-            setAnswers(JSON.parse(savedAnswers));
-        }
-    }, [storageKey]);
-
-    const handleAnswerChange = useCallback(
-        (questionId: string, value: number) => {
-            setAnswers((prev) => {
-                const updatedAnswers = { ...prev, [questionId]: value };
-                localStorage.setItem(storageKey, JSON.stringify(updatedAnswers));
-                return updatedAnswers;
-            });
-        },
-        [storageKey]
-    );
 
     const handleSubmit = async () => {
         if (!participantId) {
@@ -55,7 +38,7 @@ export default function AttachmentTest() {
             setIsSubmitting(false);
         } else {
             alert('검사 결과가 저장되었습니다.');
-            localStorage.removeItem(storageKey);
+            clear();
             setIsSubmitted(true);
             router.back();
         }

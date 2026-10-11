@@ -45,7 +45,16 @@ const QUESTIONS = [
     },
 ];
 
-const RESULTS: Record<string, any> = {
+type DigimonResult = {
+    emoji: string;
+    color: string;
+    tags: string[];
+    desc: string;
+    best: string;
+    worst: string;
+};
+
+const RESULTS: Record<string, DigimonResult> = {
     아구몬: {
         emoji: '🦖',
         color: 'bg-[#FFD700]',
@@ -177,7 +186,7 @@ export default function DigimonTest() {
                                 >
                                     <span className="text-5xl mb-2">{result.emoji}</span>
                                     <span className="text-[10px] font-black">
-                                        {result.scoreName} {getResultKey()}
+                                        {getResultKey()}
                                     </span>
                                 </div>
                                 <div className="w-2/3 grid grid-cols-2 gap-1">

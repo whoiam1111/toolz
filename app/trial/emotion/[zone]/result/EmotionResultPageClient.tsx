@@ -1,17 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { questions, PERFUME_DATA, PerfumeInfo } from '@/app/lib/data';
+import { useParams, useSearchParams } from 'next/navigation';
+import { PERFUME_DATA, PerfumeInfo } from '@/app/lib/data';
 import { motion } from 'framer-motion';
+import { loadAndSaveZoneResult, trialDisplayName, type TrialZone, type ZoneResults } from '@/app/lib/trialClient';
 
-type ZoneType = 'head' | 'heart' | 'gut';
-
-interface ZoneState {
-    heart?: number;
-    head?: number;
-    gut?: number;
-}
+type ZoneType = TrialZone;
+type ZoneState = ZoneResults;
 
 const ZONES: {
     key: ZoneType;
@@ -47,7 +43,6 @@ const ZONES: {
 export default function ResultPage() {
     const params = useParams();
     const searchParams = useSearchParams();
-    const router = useRouter();
 
     const currentZone = (params.zone as ZoneType) || 'heart';
     const clientid = searchParams.get('clientid') || 'GUEST';
@@ -57,34 +52,10 @@ export default function ResultPage() {
     const [isCalculated, setIsCalculated] = useState(false);
 
     useEffect(() => {
-        const savedData: ZoneState = JSON.parse(localStorage.getItem(`perfume_${clientid}`) || '{}');
-
-        if (answersParam) {
-            const scores: Record<number, number> = {};
-
-            answersParam.split(',').forEach((item) => {
-                const [qId, scoreStr] = item.split('-');
-                const score = parseInt(scoreStr, 10);
-                const foundQ = questions.find((q) => q.id === qId);
-                if (foundQ) {
-                    scores[foundQ.typeNumber] = (scores[foundQ.typeNumber] || 0) + score;
-                }
-            });
-
-            let maxScore = -1;
-            let winningId = 1;
-            Object.entries(scores).forEach(([pId, totalScore]) => {
-                if (totalScore > maxScore) {
-                    maxScore = totalScore;
-                    winningId = Number(pId);
-                }
-            });
-
-            savedData[currentZone] = winningId;
-            localStorage.setItem(`perfume_${clientid}`, JSON.stringify(savedData));
-        }
-
-        setZoneResults(savedData);
+        // 영역별 결과를 브라우저에 누적 저장해 세 영역(head/heart/gut) 결과를 함께 보여준다.
+        // localStorage는 하이드레이션 이후에만 읽을 수 있어 effect 안에서 setState 한다
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setZoneResults(loadAndSaveZoneResult(clientid, currentZone, answersParam));
         setIsCalculated(true);
     }, [answersParam, currentZone, clientid]);
 
@@ -106,7 +77,7 @@ export default function ResultPage() {
             {/* Header */}
             <header className="text-center mb-10 z-10">
                 <span className="text-[10px] tracking-[0.3em] text-[#8C7A6B] uppercase font-sans border-b border-[#D8CFC4] pb-1">
-                    PERFUME PROFILE · {clientid}
+                    PERFUME PROFILE · {trialDisplayName(clientid)}
                 </span>
                 <h1 className="text-2xl md:text-3xl font-normal tracking-wide text-[#383129] mt-3 font-serif italic">
                     Invisible, Unforgettable.

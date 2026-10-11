@@ -1,26 +1,28 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const SUPABASE_HOST = 'caymroqwpaqyppsopyva.supabase.co';
+
+const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'caymroqwpaqyppsopyva.supabase.co',
+        hostname: SUPABASE_HOST,
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        // 비공개 버킷 이미지(서약서, 검사 그림)의 signed URL
+        protocol: 'https',
+        hostname: SUPABASE_HOST,
+        port: '',
+        pathname: '/storage/v1/object/sign/**',
+      },
     ],
   },
-  // TypeScript 에러가 있어도 빌드를 진행합니다.
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  // ESLint 에러가 있어도 빌드를 진행합니다.
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // 타입 오류가 있으면 빌드가 실패한다 (ignoreBuildErrors 제거).
+  // Next 16부터 빌드 중 ESLint는 실행되지 않으므로 `npm run lint`로 따로 검사한다.
   transpilePackages: ['framer-motion'],
 };
 
-// NextConfig 타입을 직접 명시하는 대신, 
-// 객체 자체를 내보내어 TypeScript의 엄격한 검사를 피합니다.
 export default nextConfig;

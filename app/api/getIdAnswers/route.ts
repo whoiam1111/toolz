@@ -1,24 +1,24 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { requireUser } from '@/app/lib/supabase-server';
 import { getIdAnswers } from '@/app/db';
-import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
-    // URL에서 clientid 추출
-    const { searchParams } = new URL(req.url);
-    const clientid = searchParams.get('clientid');
+    const auth = await requireUser();
+    if (!auth.ok) return NextResponse.json({ error: auth.message }, { status: auth.status });
 
+    const clientid = req.nextUrl.searchParams.get('clientid');
     if (!clientid) {
-        return new Response(JSON.stringify({ error: 'Missing clientid parameter' }), { status: 400 });
+        return NextResponse.json({ error: 'Missing clientid parameter' }, { status: 400 });
     }
 
     try {
-        const data = await getIdAnswers(clientid);
-        if (!data || (Array.isArray(data) && data.length === 0)) {
-            return new Response(JSON.stringify({ error: 'No data found' }), { status: 404 });
+        const answers = await getIdAnswers(auth.supabase, clientid);
+        if (answers.length === 0) {
+            return NextResponse.json({ error: 'No data found' }, { status: 404 });
         }
-
-        return new Response(JSON.stringify({ answers: data }), { status: 200 });
+        return NextResponse.json({ answers });
     } catch (error) {
         console.error('Error fetching data:', error);
-        return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

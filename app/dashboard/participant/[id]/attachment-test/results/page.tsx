@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { supabase } from '@/app/lib/supabase';
+import { fetchLatestResult } from '@/app/lib/results';
+import { ATTACHMENT_CUTOFF, scoreAttachment } from '@/app/lib/scoring';
+import type { ScriptableScaleContext, TooltipItem } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
 import { Chart as ChartJS, LinearScale, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import { attachmentQuestions } from '@/app/lib/question';
@@ -54,7 +56,8 @@ export const attachmentTypeData = [
         advice: '상대방의 행동이 반드시 나에 대한 애정 부족을 의미하는 것은 아님을 기억하세요. 내면의 불안을 달래고 스스로를 사랑하는 연습이 필요합니다.',
     },
     {
-        type: '회피형',
+        // scoreAttachment가 반환하는 이름과 같아야 설명 카드가 표시된다 (이전에는 '회피형'이라 표시되지 않았음)
+        type: '거부회피형',
         name: '회피형 (Dismissing-Avoidant)',
         core_traits: {
             description:
@@ -93,8 +96,6 @@ export const attachmentTypeData = [
         advice: '관계에서의 두려움은 과거의 상처에서 비롯된 경우가 많습니다. 안전함을 느낄 수 있는 작은 관계부터 천천히 신뢰를 쌓아가는 것이 중요합니다.',
     },
 ];
-// 역채점 문항 (점수를 반대로 뒤집어야 하는 문항: 5점 척도 기준 6 - 점수)
-const REVERSE_ITEMS = [3, 15, 19, 22, 25, 27, 29, 33];
 
 export default function AttachmentResultsPage() {
     const params = useParams();
@@ -112,11 +113,11 @@ export default function AttachmentResultsPage() {
                 return;
             }
 
-            const { data, error } = await supabase
-                .from('attachment_tests')
-                .select('answers')
-                .eq('participant_id', participantId)
-                .maybeSingle();
+            const { data, error } = await fetchLatestResult<{ answers: Record<string, number> }>(
+                'attachment_tests',
+                'answers',
+                participantId
+            );
 
             if (error || !data?.answers) {
                 console.error('결과 데이터를 불러오지 못했습니다.', error);
@@ -126,38 +127,11 @@ export default function AttachmentResultsPage() {
 
             const answers = data.answers as Record<string, number>;
 
-            let anxietyTotal = 0; // 짝수 문항 (불안)
-            let avoidanceTotal = 0; // 홀수 문항 (회피)
+            // 짝수 문항 = 불안, 홀수 문항 = 회피, 역채점 반영, 컷오프 54점 (app/lib/scoring.ts)
+            const { anxietyScore, avoidanceScore, type } = scoreAttachment(answers, attachmentQuestions);
 
-            attachmentQuestions.forEach((q) => {
-                const answerValue = answers[q.id];
-                if (!answerValue) return;
-
-                // 역채점 로직 (5점 척도: 1->5, 2->4, 3->3, 4->2, 5->1)
-                const score = REVERSE_ITEMS.includes(q.num) ? 6 - answerValue : answerValue;
-
-                if (q.num % 2 === 0) {
-                    anxietyTotal += score; // 짝수: 불안
-                } else {
-                    avoidanceTotal += score; // 홀수: 회피
-                }
-            });
-
-            setResults({
-                anxietyScore: anxietyTotal,
-                avoidanceScore: avoidanceTotal,
-                allAnswers: answers,
-            });
-
-            // 유형 분류 (컷오프 기준점: 중간값인 54점 (18문항 * 3점))
-            // 점수가 54점 이상이면 높음(High), 미만이면 낮음(Low)
-            const isHighAnxiety = anxietyTotal >= 54;
-            const isHighAvoidance = avoidanceTotal >= 54;
-
-            if (!isHighAnxiety && !isHighAvoidance) setAttachmentType('안정형');
-            else if (isHighAnxiety && !isHighAvoidance) setAttachmentType('불안형');
-            else if (!isHighAnxiety && isHighAvoidance) setAttachmentType('거부회피형');
-            else if (isHighAnxiety && isHighAvoidance) setAttachmentType('공포회피형');
+            setResults({ anxietyScore, avoidanceScore, allAnswers: answers });
+            setAttachmentType(type);
 
             setLoading(false);
         };
@@ -181,13 +155,23 @@ export default function AttachmentResultsPage() {
         ],
     };
 
+    // 컷오프(54점) 기준선을 붉게 강조
+    const isCutoff = (ctx: ScriptableScaleContext) => ctx.tick.value === ATTACHMENT_CUTOFF;
+    const cutoffGrid = {
+        color: (ctx: ScriptableScaleContext) => (isCutoff(ctx) ? 'rgba(255, 99, 132, 0.8)' : 'rgba(0,0,0,0.1)'),
+        lineWidth: (ctx: ScriptableScaleContext) => (isCutoff(ctx) ? 2 : 1),
+    };
+
     const chartOptions = {
         responsive: true,
         plugins: {
             legend: { display: false },
             tooltip: {
                 callbacks: {
-                    label: (context: any) => `회피: ${context.raw.x}점, 불안: ${context.raw.y}점`,
+                    label: (context: TooltipItem<'scatter'>) => {
+                        const point = context.raw as { x: number; y: number };
+                        return `회피: ${point.x}점, 불안: ${point.y}점`;
+                    },
                 },
             },
         },
@@ -196,19 +180,13 @@ export default function AttachmentResultsPage() {
                 title: { display: true, text: '회피 (Avoidance) ➡️', font: { weight: 'bold' as const } },
                 min: 18,
                 max: 90,
-                grid: {
-                    color: (ctx: any) => (ctx.tick.value === 54 ? 'rgba(255, 99, 132, 0.8)' : 'rgba(0,0,0,0.1)'),
-                    lineWidth: (ctx: any) => (ctx.tick.value === 54 ? 2 : 1),
-                },
+                grid: cutoffGrid,
             },
             y: {
                 title: { display: true, text: '불안 (Anxiety) ➡️', font: { weight: 'bold' as const } },
                 min: 18,
                 max: 90,
-                grid: {
-                    color: (ctx: any) => (ctx.tick.value === 54 ? 'rgba(255, 99, 132, 0.8)' : 'rgba(0,0,0,0.1)'),
-                    lineWidth: (ctx: any) => (ctx.tick.value === 54 ? 2 : 1),
-                },
+                grid: cutoffGrid,
             },
         },
     };

@@ -10,7 +10,7 @@ export default function ReframePoint() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const { session, login, logout } = useAuth();
+    const { session, login } = useAuth();
     const router = useRouter();
 
     // 💡 세션 변경 시 대시보드로 이동

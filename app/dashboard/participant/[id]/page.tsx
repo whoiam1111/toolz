@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { supabase } from '@/app/lib/supabase';
-import { getCoreEmotionTestResult } from '@/app/api/supabaseApi';
+import { hasResult } from '@/app/lib/results';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Circle, ArrowLeft } from 'lucide-react';
 
@@ -11,7 +10,7 @@ export default function ParticipantPage() {
     const router = useRouter();
     const params = useParams();
 
-    const [participantId, setParticipantId] = useState<string | null>(null);
+    const participantId = (Array.isArray(params?.id) ? params.id[0] : params?.id) ?? null;
     const [isPersonalityDone, setIsPersonalityDone] = useState(false);
     const [isPersonalityDone2, setIsPersonalityDone2] = useState(false);
     const [isSixTypeDone, setIsSixTypeDone] = useState(false);
@@ -23,56 +22,34 @@ export default function ParticipantPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!params?.id) return;
-        const id = Array.isArray(params.id) ? params.id[0] : params.id;
-        setParticipantId(id);
+        if (!participantId) return;
+        const id = participantId;
 
         const fetchStatuses = async () => {
             try {
-                const { data: personality } = await supabase
-                    .from('personality_tests')
-                    .select('id')
-                    .eq('participant_id', id)
-                    .maybeSingle();
-                setIsPersonalityDone(!!personality);
-                const { data: personality2 } = await supabase
-                    .from('personality_tests2')
-                    .select('id')
-                    .eq('participant_id', id)
-                    .maybeSingle();
-                setIsPersonalityDone2(!!personality2);
-                const { data: sixType } = await supabase
-                    .from('sixtypes')
-                    .select('id')
-                    .eq('participant_id', id)
-                    .maybeSingle();
-                setIsSixTypeDone(!!sixType);
-
-                const { data: attachment } = await supabase
-                    .from('attachment_tests')
-                    .select('id')
-                    .eq('participant_id', id)
-                    .maybeSingle();
-                setIsAttachmentDone(!!attachment);
-
-                const { data: lifeGraph } = await supabase
-                    .from('lifegraphs')
-                    .select('id')
-                    .eq('participant_id', id)
-                    .maybeSingle();
-                setIsLifeGraphDone(!!lifeGraph);
-
-                const { data: coreEmotion } = await getCoreEmotionTestResult(id);
-                setIsCoreEmotionDone(!!coreEmotion);
+                // 6개 검사의 완료 여부를 병렬로 조회 (중복 제출이 있어도 완료로 표시됨)
+                const [personality, personality2, sixType, attachment, lifeGraph, coreEmotion] = await Promise.all([
+                    hasResult('personality_tests', id),
+                    hasResult('personality_tests2', id),
+                    hasResult('sixtypes', id),
+                    hasResult('attachment_tests', id),
+                    hasResult('lifegraphs', id),
+                    hasResult('core_emotion_tests', id),
+                ]);
+                setIsPersonalityDone(personality);
+                setIsPersonalityDone2(personality2);
+                setIsSixTypeDone(sixType);
+                setIsAttachmentDone(attachment);
+                setIsLifeGraphDone(lifeGraph);
+                setIsCoreEmotionDone(coreEmotion);
             } catch {
-                // ✅ 'err'를 제거하여 'defined but never used' 에러 해결
                 setError('상태를 불러오는 중 오류가 발생했습니다.');
             } finally {
                 setLoading(false);
             }
         };
         fetchStatuses();
-    }, [params]);
+    }, [participantId]);
 
     if (loading)
         return (

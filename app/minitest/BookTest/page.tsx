@@ -47,7 +47,7 @@ export default function BookTest() {
                 {view === 'main' && (
                     <div className="p-10 text-center">
                         <h1 className="text-3xl font-bold mb-6">나의 인생 책 찾기</h1>
-                        <p className="text-sm opacity-70 mb-10 italic">"내 영혼이 갈망하는 문장은 무엇일까?"</p>
+                        <p className="text-sm opacity-70 mb-10 italic">&quot;내 영혼이 갈망하는 문장은 무엇일까?&quot;</p>
                         <div className="text-7xl mb-12">📚</div>
                         <button
                             onClick={() => setView('quiz')}

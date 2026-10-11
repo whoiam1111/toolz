@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { getTrialClientId } from '@/app/lib/trialClient';
 
 export default function HomePage() {
     const [name, setName] = useState('');
@@ -12,7 +13,8 @@ export default function HomePage() {
             alert('이름을 입력해 주세요.');
             return;
         }
-        router.push(`/trial/emotion/quiz?clientid=${name}`);
+        // 예전 경로(/trial/emotion/quiz)는 존재하지 않아 [zone]='quiz'로 처리됐다. quiz 페이지의 기본 영역(heart)으로 바로 이동
+        router.push(`/trial/emotion/heart/quiz?clientid=${encodeURIComponent(getTrialClientId(name))}`);
     };
 
     return (

@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabase';
+import { uploadImage } from '../lib/storage';
+import { fetchLatestResult } from '../lib/results';
 import { Session } from '@supabase/supabase-js';
 
 export const getSession = async () => {
@@ -117,16 +119,7 @@ export const addNewParticipant = async (participant: {
     return { data, error };
 };
 export async function getCoreEmotionTestResult(participantId: string) {
-    const { data, error } = await supabase
-        .from('core_emotion_tests')
-        .select('*')
-        .eq('participant_id', participantId)
-        .limit(1)
-        .single();
-    if (error && error.code === 'PGRST116') {
-        return { data: null, error: null };
-    }
-    return { data, error };
+    return fetchLatestResult<{ answers: Record<number, string[]> }>('core_emotion_tests', '*', participantId);
 }
 
 export const createCounselorAccount = async (email: string, password: string, name: string, region: string) => {
@@ -142,23 +135,10 @@ export const createCounselorAccount = async (email: string, password: string, na
     return result;
 };
 
-export const uploadSignature = async (dataUrl: string, fileName: string) => {
+// 서명이 들어간 서약서 이미지: 추측할 수 없는 경로(UUID)로 업로드
+export const uploadSignature = async (dataUrl: string) => {
     const blob = await (await fetch(dataUrl)).blob();
-
-    const filePath = `signatures/${fileName}`;
-    const { error } = await supabase.storage.from('signatures').upload(filePath, blob, {
-        contentType: 'image/png',
-    });
-
-    if (error) {
-        return { url: null, error };
-    }
-
-    const {
-        data: { publicUrl },
-    } = supabase.storage.from('signatures').getPublicUrl(filePath);
-
-    return { url: publicUrl, error: null };
+    return uploadImage('signatures', 'signatures', blob);
 };
 export async function deleteParticipant(id: string) {
     return await supabase.from('participant').delete().eq('id', id);

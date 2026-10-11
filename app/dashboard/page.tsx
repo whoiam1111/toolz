@@ -20,18 +20,17 @@ export default function Dashboard() {
     const [searchTerm, setSearchTerm] = useState('');
     const router = useRouter();
 
+    // 목록을 펼칠 때마다 새로 불러온다 (상태 변경은 응답이 온 뒤에만)
     useEffect(() => {
-        if (showList) fetchParticipant();
+        if (!showList) return;
+        getParticipants().then(({ data, error }) => {
+            if (error) {
+                console.error(error);
+            } else {
+                setParticipant(data ?? []);
+            }
+        });
     }, [showList]);
-
-    const fetchParticipant = async () => {
-        const { data, error } = await getParticipants();
-        if (error) {
-            console.error(error);
-        } else {
-            setParticipant(data ?? []);
-        }
-    };
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('정말 삭제하시겠습니까?')) return;

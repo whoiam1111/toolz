@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { supabase } from '@/app/lib/supabase';
+import { fetchLatestResult } from '@/app/lib/results';
+import { scorePersonalityV1 } from '@/app/lib/scoring';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -21,7 +22,7 @@ import AnswerDetails from './AnswerDetails';
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend);
 
 export default function ResultsPage() {
-    const { id: participantId } = useParams();
+    const participantId = useParams()?.id as string;
     // results 상태 타입 업데이트: allAnswers 추가
     const [results, setResults] = useState<{
         categoryScores: Record<string, number>;
@@ -36,11 +37,11 @@ export default function ResultsPage() {
 
     useEffect(() => {
         const fetchResults = async () => {
-            const { data, error } = await supabase
-                .from('personality_tests')
-                .select('answers')
-                .eq('participant_id', participantId)
-                .maybeSingle();
+            const { data, error } = await fetchLatestResult<{ answers: Record<string, number> }>(
+                'personality_tests',
+                'answers',
+                participantId
+            );
 
             if (error || !data) {
                 console.error('Error fetching data or no data found');
@@ -51,84 +52,16 @@ export default function ResultsPage() {
             }
 
             const answers = data.answers;
-            const scores: Record<string, number> = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, G: 0, H: 0, I: 0 };
-
-            // 5점 척도 답변을 합산하여 카테고리별 점수 계산
-            for (let i = 1; i <= 9; i++) {
-                scores.A += answers[`a${i}`] || 0;
-                scores.B += answers[`b${i}`] || 0;
-                scores.C += answers[`c${i}`] || 0;
-                scores.D += answers[`d${i}`] || 0;
-                scores.E += answers[`e${i}`] || 0;
-                scores.F += answers[`f${i}`] || 0;
-                scores.G += answers[`g${i}`] || 0;
-                scores.H += answers[`h${i}`] || 0;
-                scores.I += answers[`i${i}`] || 0;
-            }
+            const result = scorePersonalityV1(answers);
 
             // results 상태에 categoryScores와 함께 answers도 저장합니다.
-            setResults({ categoryScores: scores, allAnswers: answers });
+            setResults({ categoryScores: result.scores, allAnswers: answers });
             setLoading(false);
 
-            // 점수가 높은 순서로 정렬하여 주 유형 결정
-            const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-
-            // 에니어그램 유형 문자열 매핑 (D->2, E->3, F->4, A->5, B->6, C->7, G->8, H->9, I->1)
-            const enneagramMapping: Record<string, string> = {
-                D: '2',
-                E: '3',
-                F: '4',
-                A: '5',
-                B: '6',
-                C: '7',
-                G: '8',
-                H: '9',
-                I: '1',
-            };
-
-            // 통합/분열 방향 매핑
-            const integrationMap: Record<string, string> = {
-                '1': '7',
-                '2': '4',
-                '3': '6',
-                '4': '1',
-                '5': '8',
-                '6': '9',
-                '7': '5',
-                '8': '2',
-                '9': '3',
-            };
-            const disintegrationMap: Record<string, string> = {
-                '1': '4',
-                '2': '8',
-                '3': '9',
-                '4': '2',
-                '5': '7',
-                '6': '3',
-                '7': '1',
-                '8': '5',
-                '9': '6',
-            };
-
-            const primaryTypeLetter = sortedScores[0][0];
-            const primaryType = enneagramMapping[primaryTypeLetter];
-
-            // 날개(wing) 유형 계산: 주 유형의 양 옆 번호 중 점수가 높은 것 선택
-            const wingCandidates = [
-                ((parseInt(primaryType) + 8) % 9 || 9).toString(), // 왼쪽 날개 (예: 3 -> 2)
-                ((parseInt(primaryType) % 9) + 1).toString(), // 오른쪽 날개 (예: 3 -> 4)
-            ];
-
-            const wingType =
-                sortedScores
-                    .map(([letter, score]) => [enneagramMapping[letter], score] as [string, number])
-                    .filter(([type]) => wingCandidates.includes(type))
-                    .sort((a, b) => b[1] - a[1])[0]?.[0] ?? ''; // 가장 높은 점수를 가진 날개 선택
-
-            setType(primaryType);
-            setWing(wingType);
-            setIntegration(integrationMap[primaryType]);
-            setDisintegration(disintegrationMap[primaryType]);
+            setType(result.type);
+            setWing(result.wing);
+            setIntegration(result.integration);
+            setDisintegration(result.disintegration);
         };
 
         fetchResults();

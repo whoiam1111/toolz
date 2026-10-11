@@ -1,39 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/app/lib/supabase';
-
-type Organization = {
-    id: number;
-    name: string;
-    website: string | null;
-    description: string | null;
-    logo_url: string | null;
-};
+import type { Organization } from './OrganizationForm';
 
 export default function OrganizationListPage() {
     const [organizations, setOrganizations] = useState<Organization[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState<string | null>(null);
+
+    // 상태 변경은 응답이 온 뒤(then 콜백)에만 한다
+    const fetchOrganizations = useCallback(
+        () =>
+            supabase
+                .from('organization')
+                .select('*')
+                .order('id')
+                .then(({ data, error }) => {
+                    if (error) {
+                        setMessage(`불러오기 오류: ${error.message}`);
+                    } else {
+                        setOrganizations(data ?? []);
+                    }
+                    setLoading(false);
+                }),
+        []
+    );
 
     useEffect(() => {
         fetchOrganizations();
-    }, []);
-
-    async function fetchOrganizations() {
-        setLoading(true);
-        const { data, error } = await supabase.from('organization').select('*').order('id');
-
-        if (error) {
-            setMessage(`불러오기 오류: ${error.message}`);
-        } else {
-            setOrganizations(data ?? []);
-        }
-
-        setLoading(false);
-    }
+    }, [fetchOrganizations]);
 
     async function handleDelete(id: number) {
         if (!confirm('정말 삭제하시겠습니까?')) return;
@@ -111,12 +109,12 @@ export default function OrganizationListPage() {
                                     )}
                                 </td>
                                 <td className="border p-2 space-x-2">
-                                    <button
-                                        onClick={() => alert('수정 기능은 아직 구현 안 됨')}
-                                        className="bg-yellow-400 px-3 py-1 rounded"
+                                    <Link
+                                        href={`/admins/organization/${org.id}/edit`}
+                                        className="inline-block bg-yellow-400 px-3 py-1 rounded"
                                     >
                                         수정
-                                    </button>
+                                    </Link>
                                     <button
                                         onClick={() => handleDelete(org.id)}
                                         className="bg-red-500 text-white px-3 py-1 rounded"

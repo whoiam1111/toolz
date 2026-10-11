@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { getTrialClientId } from '@/app/lib/trialClient';
 
 const ZONE_INFO = {
     head: {
@@ -39,7 +40,7 @@ export default function ZonePage() {
             alert('성함 혹은 닉네임을 입력해 주세요.');
             return;
         }
-        router.push(`/trial/emotion/${zone}/quiz?clientid=${encodeURIComponent(name)}`);
+        router.push(`/trial/emotion/${zone}/quiz?clientid=${encodeURIComponent(getTrialClientId(name))}`);
     };
 
     return (

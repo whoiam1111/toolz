@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { getTrialClientId } from '@/app/lib/trialClient';
 
 const ZONE_INFO = {
     head: {
@@ -41,7 +42,7 @@ export default function ZonePage() {
             alert('성함 혹은 닉네임을 입력해 주세요.');
             return;
         }
-        router.push(`/trial/emotion/book/${zone}/quiz?clientid=${encodeURIComponent(name)}`);
+        router.push(`/trial/emotion/book/${zone}/quiz?clientid=${encodeURIComponent(getTrialClientId(name))}`);
     };
 
     return (
@@ -57,7 +58,7 @@ export default function ZonePage() {
             >
                 {/* 상단 책방 브랜드 타이틀 */}
                 <span className="text-[10px] font-sans tracking-[0.3em] text-[#8C7A6B] uppercase font-light flex items-center justify-center gap-1.5 mb-2">
-                    <span>📖</span> ATELIER DE L'ESPRIT
+                    <span>📖</span> ATELIER DE L&apos;ESPRIT
                 </span>
 
                 {/* 존 타이틀 */}
@@ -74,7 +75,7 @@ export default function ZonePage() {
                 </div>
 
                 <p className="text-xs text-[#6B5E51] font-sans leading-relaxed font-light mb-3">{info.subtitle}</p>
-                <p className="text-[11px] font-serif italic text-[#8C7A6B] mb-8">"{info.bookNote}"</p>
+                <p className="text-[11px] font-serif italic text-[#8C7A6B] mb-8">&quot;{info.bookNote}&quot;</p>
 
                 {/* 이름 입력 창 */}
                 <div className="mb-6 text-left font-sans">

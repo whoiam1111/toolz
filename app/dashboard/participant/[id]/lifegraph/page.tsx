@@ -2,6 +2,7 @@
 
 import Drawbox from '@/app/about/components/Drawbox';
 import { supabase } from '@/app/lib/supabase';
+import { uploadImage } from '@/app/lib/storage';
 import { useParams } from 'next/navigation';
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 
@@ -71,7 +72,7 @@ const LifeGraphCanvas = () => {
         };
     };
 
-    const getTouchPos = (touch: Touch): { x: number; y: number } => {
+    const getTouchPos = useCallback((touch: Touch): { x: number; y: number } => {
         const canvas = drawCanvasRef.current;
         if (!canvas) return { x: 0, y: 0 };
         const rect = canvas.getBoundingClientRect();
@@ -79,39 +80,42 @@ const LifeGraphCanvas = () => {
             x: touch.clientX - rect.left,
             y: touch.clientY - rect.top,
         };
-    };
+    }, []);
 
-    const startDrawing = (pos: { x: number; y: number }) => {
+    const startDrawing = useCallback((pos: { x: number; y: number }) => {
         setDrawing(true);
         setLastPos(pos);
-    };
+    }, []);
 
-    const endDrawing = () => {
+    const endDrawing = useCallback(() => {
         setDrawing(false);
         setLastPos(null);
-    };
+    }, []);
 
-    const drawLine = (pos: { x: number; y: number }) => {
-        setCursorPos(pos);
-        if (!drawing || !lastPos) return;
+    const drawLine = useCallback(
+        (pos: { x: number; y: number }) => {
+            setCursorPos(pos);
+            if (!drawing || !lastPos) return;
 
-        const canvas = drawCanvasRef.current;
-        const ctx = canvas?.getContext('2d');
-        if (!ctx) return;
+            const canvas = drawCanvasRef.current;
+            const ctx = canvas?.getContext('2d');
+            if (!ctx) return;
 
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.lineWidth = isErasing ? eraserSize : 2;
-        ctx.strokeStyle = isErasing ? 'rgba(0,0,0,1)' : lineColor;
-        ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.lineWidth = isErasing ? eraserSize : 2;
+            ctx.strokeStyle = isErasing ? 'rgba(0,0,0,1)' : lineColor;
+            ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
 
-        ctx.beginPath();
-        ctx.moveTo(lastPos.x, lastPos.y);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(lastPos.x, lastPos.y);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
 
-        setLastPos(pos);
-    };
+            setLastPos(pos);
+        },
+        [drawing, lastPos, isErasing, eraserSize, lineColor]
+    );
 
     // Touch event handlers
     useEffect(() => {
@@ -148,7 +152,7 @@ const LifeGraphCanvas = () => {
             canvas.removeEventListener('touchmove', handleTouchMove);
             canvas.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [drawing, lastPos, isErasing, lineColor, eraserSize]);
+    }, [getTouchPos, startDrawing, drawLine, endDrawing]);
 
     // Mouse event handlers
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -188,24 +192,17 @@ const LifeGraphCanvas = () => {
 
         tempCanvas.toBlob(async (blob) => {
             if (!blob) return;
-            const filename = `lifegraph-${Date.now()}.png`;
 
-            const { error: uploadError } = await supabase.storage
-                .from('lifegraph')
-                .upload(filename, blob, { contentType: 'image/png' });
+            const { url, error: uploadError } = await uploadImage('lifegraph', participantId, blob);
 
-            if (uploadError) {
-                alert('업로드 실패: ' + uploadError.message);
+            if (uploadError || !url) {
+                alert('업로드 실패: ' + (uploadError?.message ?? 'URL 생성 실패'));
                 return;
             }
 
-            const {
-                data: { publicUrl },
-            } = supabase.storage.from('lifegraph').getPublicUrl(filename);
-
             const { error: insertError } = await supabase
                 .from('lifegraphs')
-                .insert([{ participant_id: participantId, image_url: publicUrl }]);
+                .insert([{ participant_id: participantId, image_url: url }]);
 
             if (insertError) {
                 alert('DB 저장 실패: ' + insertError.message);

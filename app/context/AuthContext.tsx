@@ -7,6 +7,8 @@ import { getSession, signIn, signOut, onAuthStateChange } from '../api/supabaseA
 
 type AuthContextType = {
     session: Session | null | undefined;
+    // undefined: 확인 중. 관리자 판별은 서버(/api/me)에서 한다
+    isAdmin: boolean | undefined;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
 };
@@ -16,7 +18,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // undefined: 세션 확인 중, null: 로그아웃, Session: 로그인
     const [session, setSession] = useState<Session | null | undefined>(undefined);
+    // 어느 사용자에 대한 판별 결과인지 함께 저장 → 사용자가 바뀌면 자동으로 "확인 중"이 된다
+    const [adminCheck, setAdminCheck] = useState<{ userId: string; isAdmin: boolean } | null>(null);
     const router = useRouter();
+    const userId = session?.user?.id;
+
+    const isAdmin =
+        session === undefined
+            ? undefined
+            : !userId
+              ? false
+              : adminCheck?.userId === userId
+                ? adminCheck.isAdmin
+                : undefined;
+
+    // 토큰 갱신마다 다시 조회하지 않도록 사용자 id가 바뀔 때만 확인
+    useEffect(() => {
+        if (!userId) return;
+        let cancelled = false;
+        fetch('/api/me')
+            .then((res) => res.json())
+            .then((data) => !cancelled && setAdminCheck({ userId, isAdmin: !!data.isAdmin }))
+            .catch(() => !cancelled && setAdminCheck({ userId, isAdmin: false }));
+        return () => {
+            cancelled = true;
+        };
+    }, [userId]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const EXPIRATION_TIME = 12 * 60 * 60 * 1000; // 12시간
@@ -132,7 +159,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    return <AuthContext.Provider value={{ session, login, logout }}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{ session, isAdmin, login, logout }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

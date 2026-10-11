@@ -103,8 +103,7 @@ export default function NewParticipantPage() {
 
         setLoading(true);
 
-        const fileName = `agreement-full-${Date.now()}.png`;
-        const { url: signatureurl, error: uploadError } = await uploadSignature(signatureData, fileName);
+        const { url: signatureurl, error: uploadError } = await uploadSignature(signatureData);
 
         if (uploadError || !signatureurl) {
             alert('서명 업로드에 실패했습니다.');

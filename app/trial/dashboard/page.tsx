@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { trialDisplayName } from '@/app/lib/trialClient';
 
 interface Answer {
     clientid: string;
@@ -22,7 +23,7 @@ export default function DashboardPage() {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const router = useRouter();
 
-    // 📥 페이지 열리면 그냥 바로 데이터 가져오기 (세션 눈치 안 봄!)
+    // 로그인 확인은 proxy.ts와 trial/dashboard/layout.tsx에서 한다
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -35,7 +36,7 @@ export default function DashboardPage() {
                 if (data.answers) {
                     const results: UserResult[] = data.answers.map((answer: Answer) => ({
                         clientid: answer.clientid,
-                        name: answer.clientid,
+                        name: trialDisplayName(answer.clientid),
                         answers: answer.answers,
                         created_at: answer.created_at,
                     }));

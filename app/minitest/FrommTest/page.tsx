@@ -171,9 +171,9 @@ export default function FrommTestWhite() {
                                 </div>
                                 <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
                                     <span className="text-[10px] font-bold text-slate-400 block mb-2 uppercase tracking-tight">
-                                        Erich Fromm's Advice
+                                        Erich Fromm&apos;s Advice
                                     </span>
-                                    <p className="text-sm text-slate-700 font-medium italic">"{res.advice}"</p>
+                                    <p className="text-sm text-slate-700 font-medium italic">&quot;{res.advice}&quot;</p>
                                 </div>
                             </div>
 

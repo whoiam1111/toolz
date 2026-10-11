@@ -9,7 +9,7 @@ import { Menu, X } from 'lucide-react';
 export default function Navigation() {
     const [scrolling, setScrolling] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { session, logout } = useAuth();
+    const { session, isAdmin, logout } = useAuth();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -64,7 +64,7 @@ export default function Navigation() {
                             <Link href="/dashboard" className={navLinkStyle}>Dashboard</Link>
                         )}
                         
-                        {session?.user?.email === 'seouljdb@jdb.com' && (
+                        {session && isAdmin && (
                             <Link href="/admins" className={navLinkStyle}>Admin</Link>
                         )}
 

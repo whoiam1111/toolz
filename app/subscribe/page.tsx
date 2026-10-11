@@ -24,9 +24,17 @@ export default function CounselorToolsPage() {
     const [promoCode, setPromoCode] = useState('');
     const router = useRouter();
 
-    const handlePurchaseClick = (plan: string) => {
-        if (promoCode === 'jdbjdb1234') {
-            router.push(`/purchase/confirm?plan=${plan}`);
+    const handlePurchaseClick = async (plan: string) => {
+        // 코드 검증은 서버(/api/promo)에서 한다
+        const res = await fetch('/api/promo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: promoCode }),
+        }).catch(() => null);
+        const { valid } = res?.ok ? await res.json() : { valid: false };
+
+        if (valid) {
+            router.push(`/purchase/confirm?plan=${encodeURIComponent(plan)}`);
         } else {
             alert('유효한 할인/파트너 코드를 입력해주세요.');
         }

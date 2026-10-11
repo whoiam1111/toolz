@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
+import { usePersistentAnswers } from '@/app/lib/usePersistentAnswers';
 import { useParams, useRouter } from 'next/navigation';
 import { questions } from '@/app/lib/question';
 import { savePersonalityTest } from '@/app/api/supabaseApi';
@@ -11,27 +12,9 @@ export default function PersonalityTest() {
     const participantId = params?.id as string;
     const storageKey = `personality_test_${participantId}`;
 
-    const [answers, setAnswers] = useState<{ [key: string]: number }>({});
+    const { answers, setAnswer: handleAnswerChange, clear } = usePersistentAnswers(storageKey);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    useEffect(() => {
-        const savedAnswers = localStorage.getItem(storageKey);
-        if (savedAnswers) {
-            setAnswers(JSON.parse(savedAnswers));
-        }
-    }, [storageKey]);
-
-    const handleAnswerChange = useCallback(
-        (questionId: string, value: number) => {
-            setAnswers((prev) => {
-                const updatedAnswers = { ...prev, [questionId]: value };
-                localStorage.setItem(storageKey, JSON.stringify(updatedAnswers));
-                return updatedAnswers;
-            });
-        },
-        [storageKey]
-    );
 
     const handleSubmit = async () => {
         if (!participantId) {
@@ -55,7 +38,7 @@ export default function PersonalityTest() {
             setIsSubmitting(false); // 실패하면 다시 눌러도 되도록
         } else {
             alert('검사 결과가 저장되었습니다.');
-            localStorage.removeItem(storageKey);
+            clear();
             setIsSubmitted(true); // 제출 완료 상태
             router.back();
         }

@@ -3,7 +3,15 @@
 import React, { useState, useRef } from 'react';
 import html2canvas from 'html2canvas'; // 라이브러리 임포트
 
-const RESULT_DETAILS: Record<string, any> = {
+type ResultDetail = {
+    tags: string[];
+    longDesc: string;
+    good: { name: string; emoji: string };
+    bad: { name: string; emoji: string };
+    color: string;
+};
+
+const RESULT_DETAILS: Record<string, ResultDetail> = {
     '유행의 파도술사': {
         tags: ['#얼리어답터', '#호기심천국', '#인싸의길', '#변화무쌍', '#트렌드세터', '#실행력갑'],
         longDesc:
@@ -181,7 +189,7 @@ export default function TestItQuiz() {
 
                         <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">유행 민감도 테스트</h1>
                         <p className="text-gray-500 text-sm mb-12 font-bold italic">
-                            "나는 유행의 파도를 타는가, 맞서는가?"
+                            &quot;나는 유행의 파도를 타는가, 맞서는가?&quot;
                         </p>
 
                         {/* 메인 아이콘 박스 - 결과지와 통일감 있는 디자인 */}

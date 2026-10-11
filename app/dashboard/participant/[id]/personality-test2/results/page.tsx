@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { supabase } from '@/app/lib/supabase';
+import { fetchLatestResult } from '@/app/lib/results';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -17,15 +17,9 @@ import {
 import { typeData } from '@/app/lib/context';
 import { questions2 } from '@/app/lib/question';
 import AnswerDetails from './AnswerDetails';
+import { scorePersonalityV2 } from '@/app/lib/scoring';
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend);
-
-type Question = {
-    id: string;
-    num: string;
-    text: string;
-    scoreIncluded?: boolean;
-};
 
 type ResultsState = {
     categoryScores: Record<string, number>;
@@ -33,70 +27,6 @@ type ResultsState = {
 };
 
 const enneagramOrder = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
-const integrationMap: Record<string, string> = {
-    '1': '7',
-    '2': '4',
-    '3': '6',
-    '4': '1',
-    '5': '8',
-    '6': '9',
-    '7': '5',
-    '8': '2',
-    '9': '3',
-};
-
-const disintegrationMap: Record<string, string> = {
-    '1': '4',
-    '2': '8',
-    '3': '9',
-    '4': '2',
-    '5': '7',
-    '6': '3',
-    '7': '1',
-    '8': '5',
-    '9': '6',
-};
-
-function getTypeFromQuestionId(questionId: string): string {
-    return questionId.split('_')[0].replace('t', ''); // t8_1 -> 8
-}
-
-function calculateCategoryScores(answers: Record<string, number>, questions: Question[]): Record<string, number> {
-    const initialScores: Record<string, number> = {
-        '1': 0,
-        '2': 0,
-        '3': 0,
-        '4': 0,
-        '5': 0,
-        '6': 0,
-        '7': 0,
-        '8': 0,
-        '9': 0,
-    };
-
-    for (const question of questions) {
-        if (question.scoreIncluded === false || question.num === '※') continue;
-
-        const value = answers[question.id];
-        if (typeof value !== 'number') continue;
-
-        const type = getTypeFromQuestionId(question.id);
-        if (initialScores[type] != null) {
-            initialScores[type] += value;
-        }
-    }
-
-    return initialScores;
-}
-
-function getWingType(primaryType: string, scores: Record<string, number>): string {
-    const typeNum = parseInt(primaryType, 10);
-    const leftWing = typeNum === 1 ? '9' : String(typeNum - 1);
-    const rightWing = typeNum === 9 ? '1' : String(typeNum + 1);
-
-    return scores[leftWing] >= scores[rightWing] ? leftWing : rightWing;
-}
 
 export default function ResultsPage() {
     const params = useParams();
@@ -118,11 +48,11 @@ export default function ResultsPage() {
                 return;
             }
 
-            const { data, error } = await supabase
-                .from('personality_tests2')
-                .select('answers')
-                .eq('participant_id', participantId)
-                .maybeSingle();
+            const { data, error } = await fetchLatestResult<{ answers: Record<string, number> }>(
+                'personality_tests2',
+                'answers',
+                participantId
+            );
 
             if (error || !data?.answers) {
                 console.error('Error fetching data or no data found', error);
@@ -132,21 +62,17 @@ export default function ResultsPage() {
             }
 
             const answers = data.answers as Record<string, number>;
-            const scores = calculateCategoryScores(answers, questions2);
+            const result = scorePersonalityV2(answers, questions2);
 
             setResults({
-                categoryScores: scores,
+                categoryScores: result.scores,
                 allAnswers: answers,
             });
 
-            const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-            const primaryType = sortedScores[0]?.[0] ?? '';
-            const wingType = primaryType ? getWingType(primaryType, scores) : '';
-
-            setType(primaryType);
-            setWing(wingType);
-            setIntegration(primaryType ? integrationMap[primaryType] : '');
-            setDisintegration(primaryType ? disintegrationMap[primaryType] : '');
+            setType(result.type);
+            setWing(result.wing);
+            setIntegration(result.integration);
+            setDisintegration(result.disintegration);
             setLoading(false);
         };
 

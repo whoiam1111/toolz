@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
+import { usePersistentAnswers } from '@/app/lib/usePersistentAnswers';
 import { useParams, useRouter } from 'next/navigation';
 import { questions2 } from '@/app/lib/question';
 import { savePersonalityTest2 } from '@/app/api/supabaseApi';
@@ -11,27 +12,9 @@ export default function PersonalityTest() {
     const participantId = params?.id as string;
     const storageKey = `personality_test2_${participantId}`;
 
-    const [answers, setAnswers] = useState<{ [key: string]: number }>({});
+    const { answers, setAnswer: handleAnswerChange, clear } = usePersistentAnswers(storageKey);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    useEffect(() => {
-        const savedAnswers = localStorage.getItem(storageKey);
-        if (savedAnswers) {
-            setAnswers(JSON.parse(savedAnswers));
-        }
-    }, [storageKey]);
-
-    const handleAnswerChange = useCallback(
-        (questionId: string, value: number) => {
-            setAnswers((prev) => {
-                const updatedAnswers = { ...prev, [questionId]: value };
-                localStorage.setItem(storageKey, JSON.stringify(updatedAnswers));
-                return updatedAnswers;
-            });
-        },
-        [storageKey]
-    );
 
     const handleSubmit = async () => {
         if (!participantId) {
@@ -55,7 +38,7 @@ export default function PersonalityTest() {
             setIsSubmitting(false); // 실패하면 다시 눌러도 되도록
         } else {
             alert('검사 결과가 저장되었습니다.');
-            localStorage.removeItem(storageKey);
+            clear();
             setIsSubmitted(true); // 제출 완료 상태
             router.back();
         }
@@ -78,8 +61,8 @@ export default function PersonalityTest() {
                     <li>
                         배워서 익힌 행동이 아니라, 원래 성향을 체크하세요.
                         <ul className="list-disc list-inside ml-6 mt-1 text-gray-600">
-                            <li>예시1) 군대에서 시간 지키는 습관이 생겼어도, 원래는 느긋하다면 "느긋함"에 체크.</li>
-                            <li>예시2) 직장에서 적극적으로 변했어도, 원래는 조용하다면 "조용함"에 체크.</li>
+                            <li>예시1) 군대에서 시간 지키는 습관이 생겼어도, 원래는 느긋하다면 &quot;느긋함&quot;에 체크.</li>
+                            <li>예시2) 직장에서 적극적으로 변했어도, 원래는 조용하다면 &quot;조용함&quot;에 체크.</li>
                         </ul>
                     </li>
                     <li>
